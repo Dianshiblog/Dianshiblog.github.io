@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Liu Dianshi" />
+  
+  
+  <title>「Java 系列」篇三：Junit、反射和注解 | Dianshi Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Java,Java,Junit,反射,注解," />
+  
+
+  
+  <meta name="description" content="刘点石的小站">
+
+  
+
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js" async></script>
+  
+
+  
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+  
+
+  
+
+  
+
+  <script>
+  // theme-ad's config script
+  // it can be used in every script
+  
+  window.AD_CONFIG = {
+    leancloud: {"appid":"Hyq9wkH495DgNHWhDQCOfQSp-gzGzoHsz","appkey":"WaR7nrzhliHj9aVwdQzkdlGd","comment":false,"count":true},
+    welcome: {"enable":false,"interval":30},
+    start_time: "2019-12-14",
+    passwords: ["efe07af7441da2b69c4a41e42e73be4db47f66010a56900788a458354a7373ec", ],
+    is_post: true,
+    lock: false,
+    author: "Liu Dianshi",
+    share: {"twitter":true,"facebook":true,"weibo":true,"qq":true,"wechat":true},
+    mathjax: true,
+    page_type: "",
+    root: "/"
+  };
+</script>
+
+  
+<script src="/vendor/sha256.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/index.js"></script>
+<script src="/vendor/qrcode.min.js"></script>
+
+
+  
+    <link rel="icon" href="/images/favicon.ico">
+    <link rel="apple-touch-icon" href="/images/touch-icon.png">
+  
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  
+<link rel="stylesheet" href="/css/index.css">
+<link rel="stylesheet" href="/styles/components/highlight/highlight.css">
+
+
+  
+<meta name="generator" content="Hexo 4.1.1"></head>
+  <body>
+    <header class="site-header">
+  <div class="site-header-brand">
+    
+      <span class="site-header-brand-title">
+        <a href="/">Dianshi</a>
+      </span>
+    
+    
+      <span class="site-header-brand-motto"> | 安静写些东西</span>
+    
+  </div>
+  <div class="site-header-right">
+    <nav class="site-header-navigation">
+      
+        <a href="/" target="_self">首页</a>
+      
+        <a href="/archives/" target="_self">归档</a>
+      
+        <a href="/tags/" target="_self">标签</a>
+      
+        <a href="/categories/" target="_self">分类</a>
+      
+        <a href="/about/" target="_self">关于</a>
+      
+    </nav>
+    <div class="site-header-btn">
+      
+        <a href="https://github.com/LiuDianshi" target="_blank" id="site-github">
+          <i class="fa fa-github-alt"></i>
+        </a>
+      
+      <a href="javascript:void(0);" id="site-search">
+        <i class="fa fa-search"></i>
+      </a>
+      <a href="javascript:void(0);" id="site-nav-btn">
+        <i class="fa fa-ellipsis-v"></i>
+      </a>
+    </div>
+  </div>
+</header>
+<nav class="table-content" id="site-nav">
+  <div class="table-content-title">
+    <span>导航</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc">
+      
+        <li class="toc-item">
+          <a href="/" target="_self">
+            首页
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/archives/" target="_self">
+            归档
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/tags/" target="_self">
+            标签
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/categories/" target="_self">
+            分类
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/about/" target="_self">
+            关于
+          </a>
+        </li>
+      
+    </ol>
+  </div>
+</nav>
+<div id="site-process"></div>
+    <main>
+      
+  <div class="passage">
+  <div class="passage-meta">
+    <span>
+      <i class="fa fa-calendar"></i>2019-12-16
+    </span>
+    
+      <span>
+        | <a href="/categories/Java/"><i class="fa fa-bookmark"></i>Java</a>
+      </span>
+    
+    
+      <span>
+        | <i class="fa fa-unlock-alt"></i>UNLOCK
+      </span>
+    
+  </div>
+  <h1 class="passage-title">
+    「Java 系列」篇三：Junit、反射和注解
+  </h1>
+  
+  <article class="passage-article">
+    <p>by 刘点石</p>
+<p>今天学习的是 Java 基础加强部分的内容，包括 Junit、反射、注解三部分内容。</p>
+<h2 id="Part-I-Junit"><a href="#Part-I-Junit" class="headerlink" title="Part I. Junit"></a>Part I. Junit</h2><ol>
+<li><p>测试的分类：</p>
+<ul>
+<li>黑盒测试：只关注输入与输出的结果，不关注内部实现的细节。</li>
+<li>白盒测试：既关注输入与输出的结果，又关注程序的执行流程。</li>
+</ul>
+</li>
+<li><p>Junit：白盒测试</p>
+<p>步骤：</p>
+<ul>
+<li>定义一个测试类：<ul>
+<li>类名一般为 XxxxTest，如 CalculatorTest</li>
+<li>报名一般为 xxx.xxx.test，如 </li>
+</ul>
+</li>
+<li>定义测试方法<ul>
+<li>方法名：testXxxx，如 testAdd()</li>
+<li>返回值：void</li>
+<li>参数列表：空参</li>
+</ul>
+</li>
+<li>给测试方法加注解 @Test</li>
+<li>导入 junit 依赖包</li>
+</ul>
+<p>运行结果：</p>
+<ul>
+<li><p>红色：测试方法运行发现错误</p>
+</li>
+<li><p>绿色：测试方法运行未发现错误</p>
+</li>
+<li><p>注：一般情况下，会用断言操作来处理测试函数中得到的结果</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Assert.assertEquals(期望的结果,运算的结果);</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>补充：</p>
+<ul>
+<li>@Before：修饰的方法会在测试方法前自动执行</li>
+<li>@After：修饰的方法会在测试方法执行后自动执行</li>
+</ul>
+</li>
+</ol>
+<h2 id="Part-II-反射"><a href="#Part-II-反射" class="headerlink" title="Part II. 反射"></a>Part II. 反射</h2><ol>
+<li><p>Java代码执行的三个阶段</p>
+<p>一般情况下，Java 代码执行过程分为三个阶段：</p>
+<ul>
+<li>Source 源代码阶段</li>
+<li>Class 类对象阶段</li>
+<li>Runtime 运行时阶段</li>
+</ul>
+<p>下面对这三个阶段依次解释：</p>
+<p><strong>Source 阶段</strong>：</p>
+<p>一般而言，当我们定义一个类时，会定义其<strong>成员变量</strong>、<strong>构造方法</strong>和<strong>成员方法</strong>，并将其放在一个 .java 文件中。该文件经过编译后会生成一个 .class 文件，即字节码文件，其中也包含了成员变量、构造方法和成员方法三部分。Source 源代码阶段主要包含这两个部分。</p>
+<p><strong>Class 阶段：</strong></p>
+<p>字节码文件经过类加载器（ClassLoader）加载到内存中，每个类经过加载后对应一个 Class 对象，该对象包括一个存放<strong>成员变量对象（field）</strong>的数组 Field [] fields；一个存放<strong>构造方法对象（constructor）</strong>的数组 Constructor [] constructors；和一个用于存放<strong>成员方法对象（method）</strong>的数组 Method [] methods。</p>
+<p><strong>Runtime 阶段：</strong></p>
+<p>内存中的 Class 类对象可以直接创建类对象，即进入 Runtime 阶段。</p>
+</li>
+<li><p>反射</p>
+<p>反射即程序在运行时可以访问、检测和修改它本身状态或行为的一种能力（维基百科）。在 Java 中，由 Source 阶段和 Runtime 阶段得到 Class 类对象并进行各类操作的过程称之为反射（我的理解）。</p>
+<p>得到 Class 对象的方法：</p>
+<ul>
+<li><p>Class.forName(“全类名”)：将字节码加载进内存，返回 Class 对象</p>
+<p>多用于配置文件，将类名、方法名等定义在配置文件中。</p>
+</li>
+<li><p>类名.class：通过类名的属性class获取</p>
+</li>
+<li><p>对象.getClass()：由对象获取 Class，getClass()方法在Object类中定义。</p>
+</li>
+</ul>
+<p>注：同一个字节码文件 (*.class) 在一次程序运行过程中，只会被加载一次，不论通过哪一种方式获取的Class对象都是同一个。</p>
+</li>
+<li><p>Class 对象的功能</p>
+<ul>
+<li>获取成员变量：<ul>
+<li>Field[] getFields()：获取所有public修饰的成员变量</li>
+<li>Field getField(String name)：获取指定名称的 public修饰的成员变量</li>
+<li>Field[] getDeclaredFields()：获取所有的成员变量</li>
+<li>Field getDeclaredField(String name)：获取指定名称的成员变量</li>
+</ul>
+</li>
+<li>获取构造方法<ul>
+<li>Constructor&lt;?&gt;[] getConstructors()：获取所有public修饰的构造函数</li>
+<li>Constructor<T> getConstructor(Class&lt;?&gt;… parameterTypes)：获取指定名称的 public 修饰的构造函数</li>
+<li>Constructor&lt;?&gt;[] getDeclaredConstructors()：获取所有构造函数</li>
+<li>Constructor<T> getDeclaredConstructor(Class&lt;?&gt;… parameterTypes)：获取指定名称的构造函数</li>
+</ul>
+</li>
+<li>获取成员方法<ul>
+<li>Method[] getMethods()：获取所有public修饰的成员方法</li>
+<li>Method getMethod(String name, Class&lt;?&gt;… parameterTypes)：获取指定名称的 public 修饰的成员方法</li>
+<li>Method[] getDeclaredMethods()：获取所有的成员方法</li>
+<li>Method getDeclaredMethod(String name, Class&lt;?&gt;… parameterTypes)：获取指定名称的成员方法。</li>
+</ul>
+</li>
+<li>Field：成员变量<ul>
+<li>设置值：void set(Object obj, Object value)</li>
+<li>获取值：get(Object obj) </li>
+<li>忽略访问权限修饰符的安全检查：setAccessible(true)，又称暴力反射</li>
+</ul>
+</li>
+<li>Constructor：构造方法<ul>
+<li>创建对象：T newInstance(Object… initargs)</li>
+<li>创建空参对象也可以直接调用 Class 对象的 newInstance 方法</li>
+</ul>
+</li>
+<li>Method：方法对象<ul>
+<li>执行方法：Object invoke(Object obj, Object… args) </li>
+<li>获取方法名称：String getName()</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>案例</p>
+<p>要求：实现一个简易框架，可以从配置文件读取类名和方法名并执行该类的该方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="comment">//读取配置文件并加载</span></span><br><span class="line">    Properties pro = <span class="keyword">new</span> Properties();</span><br><span class="line">    ClassLoader classLoader = ReflectTest<span class="class">.<span class="keyword">class</span>.<span class="title">getClassLoader</span>()</span>;</span><br><span class="line">    InputStream resourceAsStream = classLoader.getResourceAsStream(<span class="string">"pro.properties"</span>);</span><br><span class="line">    pro.load(resourceAsStream);</span><br><span class="line">	<span class="comment">//获取类名和方法名</span></span><br><span class="line">    String className = pro.getProperty(<span class="string">"className"</span>);</span><br><span class="line">    String methodName = pro.getProperty(<span class="string">"methodName"</span>);</span><br><span class="line">	<span class="comment">//创建 Class 对象并创建实例</span></span><br><span class="line">    Class&lt;?&gt; cls = Class.forName(className);</span><br><span class="line">    Object o = cls.newInstance();</span><br><span class="line">	<span class="comment">//由方法名获取成员方法并执行</span></span><br><span class="line">    Method method = cls.getMethod(methodName);</span><br><span class="line">    method.invoke(o);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h2 id="Part-III-注解"><a href="#Part-III-注解" class="headerlink" title="Part III. 注解"></a>Part III. 注解</h2><p>注解（Annotation），也叫元数据，一种代码级别的说明。它是 JDK1.5 及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。它可以声明在包、类、字段、方法、局部变量、方法参数等的前面，用来对这些元素进行说明，注释。</p>
+<ol>
+<li><p>注解的作用分类</p>
+<ul>
+<li>编写文档：通过代码里标识的注解生成文档</li>
+<li>代码分析：通过代码里标识的注解对代码进行分析</li>
+<li>编译检查：通过代码里标识的注解让编译器能够实现基本的编译检查（如 Override ）</li>
+</ul>
+</li>
+<li><p>JDK 中预定义的一些注解</p>
+<ul>
+<li>@Override：检测被该注解标注的方法是否是继承自父类(接口)的</li>
+<li>@Deprecated：该注解标注的内容，表示已过时</li>
+<li>@SuppressWarnings：压制警告。若传递的是 “all” 参数，则压制所有警告</li>
+</ul>
+</li>
+<li><p>自定义注解</p>
+<ul>
+<li>格式：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">元注解</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> 注解名称&#123;</span><br><span class="line">	属性列表;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>本质：注解本质上就是一个接口，该接口默认继承Annotation接口</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MyAnno</span> <span class="keyword">extends</span> <span class="title">java</span>.<span class="title">lang</span>.<span class="title">annotation</span>.<span class="title">Annotation</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>属性：</p>
+<p>由于注解本身是一个对象，它的“属性”实际上就是他的抽象函数。</p>
+<p>属性的返回值类型有下列取值：</p>
+<ul>
+<li>基本数据类型</li>
+<li>String</li>
+<li>枚举</li>
+<li>注解</li>
+<li>以上类型的数组</li>
+</ul>
+<p>定义了属性，在使用时需要给属性赋值：</p>
+<ul>
+<li>如果定义属性时，使用default关键字给属性默认初始化值，则使用注解时，可以不进行属性的赋值</li>
+<li>如果只有一个属性需要赋值，并且属性的名称是value，则value可以省略，直接定义值即可</li>
+<li>数组赋值时，值使用{}包裹。如果数组中只有一个值，则{}可以省略</li>
+</ul>
+</li>
+<li><p>元注解：用于描述注解的注解</p>
+<ul>
+<li><p>@Target：描述注解能够作用的位置</p>
+<p>其参数 ElementType 的取值：</p>
+<ul>
+<li>TYPE：可以作用于类上</li>
+<li>METHOD：可以作用于方法上</li>
+<li>FIELD：可以作用于成员变量上</li>
+</ul>
+</li>
+<li><p>@Retention：描述注解被保留的阶段</p>
+<p>其参数一般取 RetentionPolicy.RUNTIME，会保留到字节码中并且会被 JVM 获取到</p>
+</li>
+<li><p>@Documented：描述注解是否被抽取到 api 文档中</p>
+</li>
+<li><p>@Inherited：描述注解是否被子类继承</p>
+</li>
+</ul>
+</li>
+<li><p>在程序中获取注解的属性值</p>
+<ul>
+<li><p>获取注解所修饰的对象（Class，Method 或 Field）</p>
+</li>
+<li><p>使用 getAnnotation(Class) 获取制定的注解</p>
+<p>注：执行该方法实际上就是在内存中实现了该注解的子类对象</p>
+</li>
+<li><p>使用注解的抽象函数获取属性值</p>
+</li>
+</ul>
+</li>
+<li><p>案例1：</p>
+<p>使用注解实现 Part II 中的简易框架：</p>
+<p>首先定义注解对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Pro &#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title">className</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title">methodName</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ol>
+<p>然后定义主类：</p>
+<pre><code><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pro</span>(className = <span class="string">"cn.dianshi.domain.Person"</span>, methodName = <span class="string">"sleep"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReflectTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Class&lt;ReflectTest&gt; reflectTestClass = ReflectTest<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        Pro annotation = reflectTestClass.getAnnotation(Pro<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        String s = annotation.className();</span><br><span class="line">        String s1 = annotation.methodName();</span><br><span class="line">        System.out.println(s);</span><br><span class="line">        System.out.println(s1);</span><br><span class="line"></span><br><span class="line">        Class&lt;?&gt; aClass = Class.forName(s);</span><br><span class="line">        Method method = aClass.getMethod(s1);</span><br><span class="line">        Object o = aClass.newInstance();</span><br><span class="line">        method.invoke(o);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></code></pre><ul>
+<li><p>案例2：</p>
+<p>使用注解对以下类的方法进行测试，如有错误则将错误信息写在 bug.txt 中：</p>
+<p>Calculator.java:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Calculator</span> </span>&#123;</span><br><span class="line">    <span class="comment">//加法</span></span><br><span class="line">    <span class="meta">@Check</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"1 + 0 ="</span> + (<span class="number">1</span> + <span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//减法</span></span><br><span class="line">    <span class="meta">@Check</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sub</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"1 - 0 ="</span> + (<span class="number">1</span> - <span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//乘法</span></span><br><span class="line">    <span class="meta">@Check</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">mul</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"1 * 0 ="</span> + (<span class="number">1</span> * <span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//除法</span></span><br><span class="line">    <span class="meta">@Check</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">div</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"1 / 0 ="</span> + (<span class="number">1</span> / <span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实现：</p>
+<p>首先定义 Check 注解：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Target</span>(ElementType.METHOD)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Check &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后编写主类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestCheck</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Calculator calculator = <span class="keyword">new</span> Calculator();</span><br><span class="line">        Class&lt;? extends Calculator&gt; aClass = calculator.getClass();</span><br><span class="line">        Method[] methods = aClass.getMethods();</span><br><span class="line">        <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">        BufferedWriter bufferedWriter = <span class="keyword">new</span> BufferedWriter(<span class="keyword">new</span> FileWriter(<span class="string">"bug.txt"</span>));</span><br><span class="line">        <span class="keyword">for</span> (Method method : methods) &#123;</span><br><span class="line">            <span class="keyword">if</span>(method.isAnnotationPresent(Check<span class="class">.<span class="keyword">class</span>))</span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    method.invoke(calculator);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    count ++;</span><br><span class="line">                    bufferedWriter.write(method.getName() + <span class="string">"方法出现异常"</span>);</span><br><span class="line">                    bufferedWriter.newLine();</span><br><span class="line">                    bufferedWriter.write(<span class="string">"异常名称"</span> + e.getCause().getClass().getSimpleName());</span><br><span class="line">                    bufferedWriter.newLine();</span><br><span class="line">                    bufferedWriter.write(<span class="string">"异常的原因"</span> + e.getCause().getMessage());</span><br><span class="line">                    bufferedWriter.newLine();</span><br><span class="line">                    bufferedWriter.write(<span class="string">"--------------------"</span>);</span><br><span class="line">                    bufferedWriter.newLine();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        bufferedWriter.write(<span class="string">"一共出现"</span> + count + <span class="string">"次异常"</span>);</span><br><span class="line"></span><br><span class="line">        bufferedWriter.flush();</span><br><span class="line">        bufferedWriter.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>注解小结：</p>
+<ul>
+<li>多数情况下我们只是使用注解，只有极少数情况下才会自定义注解</li>
+<li>注解的服务对象是编译器和解析程序</li>
+<li>注解不是程序的一部分，可以理解为注解就是一个标签</li>
+</ul>
+</li>
+</ul>
+
+  </article>
+  <aside class="table-content" id="site-toc">
+  <div class="table-content-title">
+    <i class="fa fa-arrow-right fa-lg" id="site-toc-hide-btn"></i>
+    <span>目录</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-I-Junit"><span class="toc-text">Part I. Junit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-II-反射"><span class="toc-text">Part II. 反射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-III-注解"><span class="toc-text">Part III. 注解</span></a></li></ol>
+  </div>
+</aside>
+  
+    <aside class="passage-copyright">
+      <div>本文作者: 刘点石</div>
+      
+        <div>
+          原文链接: 
+          <a href="" target="_blank">http://yoursite.com/passages/2019-12-16-junit/</a>
+        </div>
+      
+      <div>
+        版权声明: 本博客所有文章除特别声明外, 均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 许可协议. 转载请注明出处!
+      </div>
+    </aside>
+  
+  
+    <div class="passage-tags">
+     
+      <a href="/tags/Java/"><i class="fa fa-tags"></i>Java</a>
+     
+      <a href="/tags/Junit/"><i class="fa fa-tags"></i>Junit</a>
+     
+      <a href="/tags/%E5%8F%8D%E5%B0%84/"><i class="fa fa-tags"></i>反射</a>
+     
+      <a href="/tags/%E6%B3%A8%E8%A7%A3/"><i class="fa fa-tags"></i>注解</a>
+    
+    </div>
+  
+</div>
+
+    </main>
+    
+    <div class="site-footer-wrapper">
+  <footer class="site-footer">
+    
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">博客推荐</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://godbmw.com/" target="_blank">GodBMW</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="http://ruanyifeng.com/" target="_blank">阮一峰的个人网站</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">系列教程</h5>
+          
+            <span class="site-footer-item">
+              <a href="" target="_self">暂无</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">抓到我</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://weibo.com/u/3027481715" target="_blank">微博</a>
+            </span>
+          
+        </div>
+      
+    
+    <div class="site-footer-info">
+      <i class="fa fa-clock-o"></i> 本站已稳定运行<span id="site-time"></span>
+    </div>
+    
+      <div class="site-footer-info">
+        <i class="fa fa-paw"></i> 您是本站第 <span id="site-count"></span> 位访客
+      </div>
+    
+    
+      <div class="site-footer-info">
+        <i class="fa fa-at"></i> Email: dianshiliu@163.com
+      </div>
+    
+    <div class="site-footer-info">
+      <i class="fa fa-copyright"></i> 
+      2019 <a href="https://github.com/dongyuanxin/theme-ad/" target="_blank">Theme-AD</a>.
+      Created by <a href="https://godbmw.com/" target="_blank">GodBMW</a>.
+      All rights reserved.
+    </div>
+  </footer>
+</div>
+    <div id="site-layer" style="display:none;">
+  <div class="site-layer-content">
+    <div class="site-layer-header">
+      <span class="site-layer-header-title" id="site-layer-title"></span>
+      <i class="fa fa-close" id="site-layer-close"></i>
+    </div>
+    <div class="site-layer-body" id="site-layer-container">
+      <div class="site-layer-input" id="site-layer-search" style="display: none;">
+        <div class="site-layer-input-choose">
+          <a href="javascript:void(0);" title="Change Search Engine">Google</a>
+        </div>
+        <input type="text">
+        <i class="fa fa-search"></i>
+      </div>
+      
+        <div class="site-layer-reward" id="site-layer-reward" style="display: none;">
+          
+            <div>
+              <img src="/images/wechat.png" alt="WeChat">
+              
+                <p>WeChat</p>
+              
+            </div>
+          
+            <div>
+              <img src="/images/alipay.png" alt="AliPay">
+              
+                <p>AliPay</p>
+              
+            </div>
+          
+        </div>
+      
+      <div id="site-layer-welcome" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+    
+
+<div class="bottom-bar">
+  <div class="bottom-bar-left">
+    <a href="javascript:void(0);" data-enable="false">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <a href="/passages/2019-12-15-jdbc/" data-enable="true">
+      <i class="fa fa-arrow-right"></i>
+    </a>
+  </div>
+  <div class="bottom-bar-right">
+    <a href="javascript:void(0);" data-enable="true" id="site-toc-show-btn">
+      <i class="fa fa-bars"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="site-toggle-share-btn">
+      <i class="fa fa-share-alt"></i>
+    </a>
+    
+      <a href="javascript:void(0);" id="site-reward">
+        <i class="fa fa-thumbs-up"></i>
+      </a>
+    
+    <a href="javascript:void(0);" id="back-top-btn">
+      <i class="fa fa-chevron-up"></i>
+    </a>
+  </div>
+</div>
+    <div id="share-btn">
+  
+    <a id="share-btn-twitter" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-twitter"></i>
+    </a>
+  
+  
+    <a id="share-btn-facebook" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-facebook"></i>
+    </a>
+  
+  
+    <a id="share-btn-weibo" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-weibo"></i>
+    </a>
+  
+  
+    <a id="share-btn-qq" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-qq"></i>
+    </a>
+  
+  
+    <a id="share-btn-wechat" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-wechat"></i>
+    </a>
+  
+</div>
+    
+
+
+
+
+
+    
+  </body>
+</html>
