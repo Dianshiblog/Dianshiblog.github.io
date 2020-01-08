@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Liu Dianshi" />
+  
+  
+  <title>「Java 系列」篇4：XML 入门 | Dianshi Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Java,Java,XML," />
+  
+
+  
+  <meta name="description" content="刘点石的小站">
+
+  
+
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js" async></script>
+  
+
+  
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+  
+
+  
+
+  
+
+  <script>
+  // theme-ad's config script
+  // it can be used in every script
+  
+  window.AD_CONFIG = {
+    leancloud: {"appid":"Hyq9wkH495DgNHWhDQCOfQSp-gzGzoHsz","appkey":"WaR7nrzhliHj9aVwdQzkdlGd","comment":false,"count":true},
+    welcome: {"enable":false,"interval":30},
+    start_time: "2019-12-14",
+    passwords: ["efe07af7441da2b69c4a41e42e73be4db47f66010a56900788a458354a7373ec", ],
+    is_post: true,
+    lock: false,
+    author: "Liu Dianshi",
+    share: {"twitter":true,"facebook":true,"weibo":true,"qq":true,"wechat":true},
+    mathjax: true,
+    page_type: "",
+    root: "/"
+  };
+</script>
+
+  
+<script src="/vendor/sha256.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/index.js"></script>
+<script src="/vendor/qrcode.min.js"></script>
+
+
+  
+    <link rel="icon" href="/images/favicon.ico">
+    <link rel="apple-touch-icon" href="/images/touch-icon.png">
+  
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  
+<link rel="stylesheet" href="/css/index.css">
+<link rel="stylesheet" href="/styles/components/highlight/highlight.css">
+
+
+  
+<meta name="generator" content="Hexo 4.1.1"></head>
+  <body>
+    <header class="site-header">
+  <div class="site-header-brand">
+    
+      <span class="site-header-brand-title">
+        <a href="/">Dianshi</a>
+      </span>
+    
+    
+      <span class="site-header-brand-motto"> | 安静写些东西</span>
+    
+  </div>
+  <div class="site-header-right">
+    <nav class="site-header-navigation">
+      
+        <a href="/" target="_self">首页</a>
+      
+        <a href="/archives/" target="_self">归档</a>
+      
+        <a href="/tags/" target="_self">标签</a>
+      
+        <a href="/categories/" target="_self">分类</a>
+      
+        <a href="/about/" target="_self">关于</a>
+      
+    </nav>
+    <div class="site-header-btn">
+      
+        <a href="https://github.com/LiuDianshi" target="_blank" id="site-github">
+          <i class="fa fa-github-alt"></i>
+        </a>
+      
+      <a href="javascript:void(0);" id="site-search">
+        <i class="fa fa-search"></i>
+      </a>
+      <a href="javascript:void(0);" id="site-nav-btn">
+        <i class="fa fa-ellipsis-v"></i>
+      </a>
+    </div>
+  </div>
+</header>
+<nav class="table-content" id="site-nav">
+  <div class="table-content-title">
+    <span>导航</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc">
+      
+        <li class="toc-item">
+          <a href="/" target="_self">
+            首页
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/archives/" target="_self">
+            归档
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/tags/" target="_self">
+            标签
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/categories/" target="_self">
+            分类
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/about/" target="_self">
+            关于
+          </a>
+        </li>
+      
+    </ol>
+  </div>
+</nav>
+<div id="site-process"></div>
+    <main>
+      
+  <div class="passage">
+  <div class="passage-meta">
+    <span>
+      <i class="fa fa-calendar"></i>2019-01-07
+    </span>
+    
+      <span>
+        | <a href="/categories/Java/"><i class="fa fa-bookmark"></i>Java</a>
+      </span>
+    
+    
+      <span>
+        | <i class="fa fa-unlock-alt"></i>UNLOCK
+      </span>
+    
+  </div>
+  <h1 class="passage-title">
+    「Java 系列」篇4：XML 入门
+  </h1>
+  
+  <article class="passage-article">
+    <p>by 刘点石</p>
+<p>终于考完了，博客续更！</p>
+<p>今天学习的内容是 XML 的用法，包括快速入门、语法和解析方法</p>
+<h2 id="Part-I-介绍与快速入门"><a href="#Part-I-介绍与快速入门" class="headerlink" title="Part I. 介绍与快速入门"></a>Part I. 介绍与快速入门</h2><ol>
+<li><p>概念</p>
+<p>XML 全称为 Extensible Markup Language，即可扩展的标记语言，特点是可自行定义标签，常用于配置文件中。</p>
+<p>XML 与 HTML 同出自 w3c (万维网联盟)，而 XML 的语法是十分严格的，HTML 的语法比较松散。</p>
+</li>
+<li><p>快速入门</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version='1.0' ?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">users</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">user</span> <span class="attr">id</span>=<span class="string">'1'</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>Tom<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">age</span>&gt;</span>23<span class="tag">&lt;/<span class="name">age</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">gender</span>&gt;</span>male<span class="tag">&lt;/<span class="name">gender</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">user</span>&gt;</span></span><br><span class="line">				</span><br><span class="line">	<span class="tag">&lt;<span class="name">user</span> <span class="attr">id</span>=<span class="string">'2'</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">name</span>&gt;</span>Lily<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">age</span>&gt;</span>24<span class="tag">&lt;/<span class="name">age</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">gender</span>&gt;</span>female<span class="tag">&lt;/<span class="name">gender</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">user</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">users</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>特点：</p>
+<ul>
+<li>第一行必须是文档声明</li>
+<li>有且仅有一个根标签（例子中的 users）</li>
+<li>属性值必须使用单引号或者双引号括起来</li>
+<li>标签必须关闭</li>
+<li>标签名称区分大小写</li>
+</ul>
+</li>
+</ol>
+<h2 id="Part-II-XML-语法"><a href="#Part-II-XML-语法" class="headerlink" title="Part II. XML 语法"></a>Part II. XML 语法</h2><ol>
+<li><p>文档声明</p>
+<p>格式为 <?xml 属性列表 ?></p>
+<p>属性列表：</p>
+<ul>
+<li>version：版本号，必须有</li>
+<li>encoding：编码方式，默认值是ISO-8859-1</li>
+<li>standalone：（yes/no）是否以来其他文件</li>
+</ul>
+</li>
+<li><p>指令</p>
+<p>用于结合 CSS，现在没这么玩的了吧</p>
+<?xml-stylesheet type="text/css" href="style.css" ?>
+</li>
+<li><p>标签</p>
+<p>自定义标签，符合一般的编程语言命名规则</p>
+</li>
+<li><p>属性</p>
+<p>主要注意一点就是如果有 id 属性的话，其取值唯一</p>
+</li>
+<li><p>文本</p>
+<p>CDATA 区，文本原格式显示，即无需转义</p>
+<p>格式：<![CDATA[ 数据 ]]></p>
+</li>
+</ol>
+<h2 id="Part-III-XML-约束"><a href="#Part-III-XML-约束" class="headerlink" title="Part III. XML 约束"></a>Part III. XML 约束</h2><p>XML 约束规定了 XML 文档的标签书写规则，需要学会如何在 XML 中引入约束。</p>
+<p>目前用的比较多的有 DTD 和 Schema 两种。</p>
+<ol>
+<li>DTD 约束<ul>
+<li>内部 DTD：将约束规则定义在 XML 文档中</li>
+<li>外部 DTD：将约束规则定义在外部 dtd 文件中<ul>
+<li>本地 dtd 文件：第二行书写 <!DOCTYPE 根标签名 SYSTEM "dtd 文件"></li>
+<li>网络 dtd 文件：第二行书写 <!DOCTYPE 根标签名 PUBLIC "dtd 文件" "dtd 文件 URL"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Schema 约束<ul>
+<li>&lt;① ② ③ ④&gt;<ul>
+<li>① 根标签名</li>
+<li>② 引入 xsi 前缀，如 <code>xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</code></li>
+<li>③ 引入 xsd 文件命名空间 <code>xsi:schemaLocation=&quot;http://www.dianshi.cn/xml student.xsd&quot;</code></li>
+<li>④ 为 xsd 约束声明前缀作为标识 <code>xmlns=&quot;http://www.dianshi.cn/xml&quot;</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="Part-IV-XML-解析"><a href="#Part-IV-XML-解析" class="headerlink" title="Part IV. XML 解析"></a>Part IV. XML 解析</h2><p>解析 XML 文件即将其加载到内存中。</p>
+<p>常用的解析 XML 的方式：</p>
+<ul>
+<li>DOM：将 XML 文件一次性加载到内存中，形成一棵 DOM 树进行解析。操作方便，可以进行 CRUD 操作，但比较占内存。</li>
+<li>SAX：基于事件驱动，逐行读取 XML 文件。内存占用低，但是只能读取，不能增删改。</li>
+</ul>
+<p>常见的 XML 解析器：</p>
+<ul>
+<li>JAXP：Sun 官方提供的 Java XML 解析器，不太好用。</li>
+<li>DOM4J</li>
+<li>Jsoup：提供了一组 Java API，并且可以直接解析 URL 地址和 HTML 文件</li>
+<li>PULL：Android 内置的 XML 解析器</li>
+</ul>
+<hr>
+<ol>
+<li>下面着重介绍 Jsoup 的使用：</li>
+</ol>
+<ul>
+<li>获取 XML 文件的路径</li>
+<li>利用 Jsoup.parse 对路径的 XML 文件进行解析，获得 Document 对象</li>
+<li>利用 Document 对象通过 getElementsByxxx() 方法获得 Element 或 Elements（元素是 Element 的 ArrayList），并获取数据</li>
+</ul>
+<p>element.attr(String key) ：根据属性名称获取属性值</p>
+<p>element.text() ：获取文本内容</p>
+<p>element.html() ：获取标签体的所有内容(包括字标签的字符串内容)</p>
+<ol start="2">
+<li><p>快速查询</p>
+<ul>
+<li><p>selector:选择器</p>
+<p>使用的方法：Elements  select(String cssQuery)</p>
+</li>
+<li><p>XPath</p>
+<p>XPath即为XML路径语言，它是一种用来确定XML（标准通用标记语言的子集）文档中某部分位置的语言，使用之前需要导入依赖 jar 包。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.获取 XML 文件路径</span></span><br><span class="line">String path = JsoupDemo.class.getClassLoader().getResource("student.xml").getPath();</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.利用路径获取 Document 对象</span></span><br><span class="line">Document document = Jsoup.parse(<span class="keyword">new</span> File(path), <span class="string">"utf-8"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//3.获取 JXDocument 对象</span></span><br><span class="line">JXDocument jxDocument = <span class="keyword">new</span> JXDocument(document);</span><br><span class="line"></span><br><span class="line"><span class="comment">//4.查询（student 标签中 name 标签的 id 属性值为 0001 的子标签）</span></span><br><span class="line">List&lt;JXNode&gt; jxNodes4 = jxDocument.selN(<span class="string">"//student/name[@id='0001']"</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+</li>
+</ul>
+</li>
+</ol>
+
+  </article>
+  <aside class="table-content" id="site-toc">
+  <div class="table-content-title">
+    <i class="fa fa-arrow-right fa-lg" id="site-toc-hide-btn"></i>
+    <span>目录</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-I-介绍与快速入门"><span class="toc-text">Part I. 介绍与快速入门</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-II-XML-语法"><span class="toc-text">Part II. XML 语法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-III-XML-约束"><span class="toc-text">Part III. XML 约束</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-IV-XML-解析"><span class="toc-text">Part IV. XML 解析</span></a></li></ol>
+  </div>
+</aside>
+  
+    <aside class="passage-copyright">
+      <div>本文作者: 刘点石</div>
+      
+        <div>
+          原文链接: 
+          <a href="" target="_blank">http://yoursite.com/passages/2020-1-7-XML/</a>
+        </div>
+      
+      <div>
+        版权声明: 本博客所有文章除特别声明外, 均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 许可协议. 转载请注明出处!
+      </div>
+    </aside>
+  
+  
+    <div class="passage-tags">
+     
+      <a href="/tags/Java/"><i class="fa fa-tags"></i>Java</a>
+     
+      <a href="/tags/XML/"><i class="fa fa-tags"></i>XML</a>
+    
+    </div>
+  
+</div>
+
+    </main>
+    
+    <div class="site-footer-wrapper">
+  <footer class="site-footer">
+    
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">博客推荐</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://godbmw.com/" target="_blank">GodBMW</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="http://ruanyifeng.com/" target="_blank">阮一峰的个人网站</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">系列教程</h5>
+          
+            <span class="site-footer-item">
+              <a href="" target="_self">暂无</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">抓到我</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://weibo.com/u/3027481715" target="_blank">微博</a>
+            </span>
+          
+        </div>
+      
+    
+    <div class="site-footer-info">
+      <i class="fa fa-clock-o"></i> 本站已稳定运行<span id="site-time"></span>
+    </div>
+    
+      <div class="site-footer-info">
+        <i class="fa fa-paw"></i> 您是本站第 <span id="site-count"></span> 位访客
+      </div>
+    
+    
+      <div class="site-footer-info">
+        <i class="fa fa-at"></i> Email: dianshiliu@163.com
+      </div>
+    
+    <div class="site-footer-info">
+      <i class="fa fa-copyright"></i> 
+      2019 <a href="https://github.com/dongyuanxin/theme-ad/" target="_blank">Theme-AD</a>.
+      Created by <a href="https://godbmw.com/" target="_blank">GodBMW</a>.
+      All rights reserved.
+    </div>
+  </footer>
+</div>
+    <div id="site-layer" style="display:none;">
+  <div class="site-layer-content">
+    <div class="site-layer-header">
+      <span class="site-layer-header-title" id="site-layer-title"></span>
+      <i class="fa fa-close" id="site-layer-close"></i>
+    </div>
+    <div class="site-layer-body" id="site-layer-container">
+      <div class="site-layer-input" id="site-layer-search" style="display: none;">
+        <div class="site-layer-input-choose">
+          <a href="javascript:void(0);" title="Change Search Engine">Google</a>
+        </div>
+        <input type="text">
+        <i class="fa fa-search"></i>
+      </div>
+      
+        <div class="site-layer-reward" id="site-layer-reward" style="display: none;">
+          
+            <div>
+              <img src="/images/wechat.png" alt="WeChat">
+              
+                <p>WeChat</p>
+              
+            </div>
+          
+            <div>
+              <img src="/images/alipay.png" alt="AliPay">
+              
+                <p>AliPay</p>
+              
+            </div>
+          
+        </div>
+      
+      <div id="site-layer-welcome" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+    
+
+<div class="bottom-bar">
+  <div class="bottom-bar-left">
+    <a href="/passages/2019-12-14-about/" data-enable="true">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <a href="javascript:void(0);" data-enable="false">
+      <i class="fa fa-arrow-right"></i>
+    </a>
+  </div>
+  <div class="bottom-bar-right">
+    <a href="javascript:void(0);" data-enable="true" id="site-toc-show-btn">
+      <i class="fa fa-bars"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="site-toggle-share-btn">
+      <i class="fa fa-share-alt"></i>
+    </a>
+    
+      <a href="javascript:void(0);" id="site-reward">
+        <i class="fa fa-thumbs-up"></i>
+      </a>
+    
+    <a href="javascript:void(0);" id="back-top-btn">
+      <i class="fa fa-chevron-up"></i>
+    </a>
+  </div>
+</div>
+    <div id="share-btn">
+  
+    <a id="share-btn-twitter" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-twitter"></i>
+    </a>
+  
+  
+    <a id="share-btn-facebook" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-facebook"></i>
+    </a>
+  
+  
+    <a id="share-btn-weibo" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-weibo"></i>
+    </a>
+  
+  
+    <a id="share-btn-qq" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-qq"></i>
+    </a>
+  
+  
+    <a id="share-btn-wechat" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-wechat"></i>
+    </a>
+  
+</div>
+    
+
+
+
+
+
+    
+  </body>
+</html>
