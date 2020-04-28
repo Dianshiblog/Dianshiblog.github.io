@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Liu Dianshi" />
+  
+  
+  <title>「Java 系列」篇六：Docker 使用入门 | Dianshi Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Java,Docker," />
+  
+
+  
+  <meta name="description" content="刘点石的小站">
+
+  
+
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js" async></script>
+  
+
+  
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+  
+
+  
+
+  
+
+  <script>
+  // theme-ad's config script
+  // it can be used in every script
+  
+  window.AD_CONFIG = {
+    leancloud: {"appid":"Hyq9wkH495DgNHWhDQCOfQSp-gzGzoHsz","appkey":"WaR7nrzhliHj9aVwdQzkdlGd","comment":false,"count":true},
+    welcome: {"enable":false,"interval":30},
+    start_time: "2019-12-14",
+    passwords: ["efe07af7441da2b69c4a41e42e73be4db47f66010a56900788a458354a7373ec", ],
+    is_post: true,
+    lock: false,
+    author: "Liu Dianshi",
+    share: {"twitter":true,"facebook":true,"weibo":true,"qq":true,"wechat":true},
+    mathjax: true,
+    page_type: "",
+    root: "/"
+  };
+</script>
+
+  
+<script src="/vendor/sha256.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/index.js"></script>
+<script src="/vendor/qrcode.min.js"></script>
+
+
+  
+    <link rel="icon" href="/images/favicon.ico">
+    <link rel="apple-touch-icon" href="/images/touch-icon.png">
+  
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  
+<link rel="stylesheet" href="/css/index.css">
+<link rel="stylesheet" href="/styles/components/highlight/highlight.css">
+
+
+  
+<meta name="generator" content="Hexo 4.1.1"></head>
+  <body>
+    <header class="site-header">
+  <div class="site-header-brand">
+    
+      <span class="site-header-brand-title">
+        <a href="/">Dianshi</a>
+      </span>
+    
+    
+      <span class="site-header-brand-motto"> | 安静写些东西</span>
+    
+  </div>
+  <div class="site-header-right">
+    <nav class="site-header-navigation">
+      
+        <a href="/" target="_self">首页</a>
+      
+        <a href="/archives/" target="_self">归档</a>
+      
+        <a href="/tags/" target="_self">标签</a>
+      
+        <a href="/categories/" target="_self">分类</a>
+      
+        <a href="/about/" target="_self">关于</a>
+      
+    </nav>
+    <div class="site-header-btn">
+      
+        <a href="https://github.com/LiuDianshi" target="_blank" id="site-github">
+          <i class="fa fa-github-alt"></i>
+        </a>
+      
+      <a href="javascript:void(0);" id="site-search">
+        <i class="fa fa-search"></i>
+      </a>
+      <a href="javascript:void(0);" id="site-nav-btn">
+        <i class="fa fa-ellipsis-v"></i>
+      </a>
+    </div>
+  </div>
+</header>
+<nav class="table-content" id="site-nav">
+  <div class="table-content-title">
+    <span>导航</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc">
+      
+        <li class="toc-item">
+          <a href="/" target="_self">
+            首页
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/archives/" target="_self">
+            归档
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/tags/" target="_self">
+            标签
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/categories/" target="_self">
+            分类
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/about/" target="_self">
+            关于
+          </a>
+        </li>
+      
+    </ol>
+  </div>
+</nav>
+<div id="site-process"></div>
+    <main>
+      
+  <div class="passage">
+  <div class="passage-meta">
+    <span>
+      <i class="fa fa-calendar"></i>2020-04-28
+    </span>
+    
+      <span>
+        | <a href="/categories/Java/"><i class="fa fa-bookmark"></i>Java</a>
+      </span>
+    
+    
+      <span>
+        | <i class="fa fa-unlock-alt"></i>UNLOCK
+      </span>
+    
+  </div>
+  <h1 class="passage-title">
+    「Java 系列」篇六：Docker 使用入门
+  </h1>
+  
+  <article class="passage-article">
+    <h2 id="1-初始Docker"><a href="#1-初始Docker" class="headerlink" title="1.初始Docker"></a>1.初始Docker</h2><p>Docker 的架构如下图所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/b473b473ly1ge9cnasucvj21s40pogyb.jpg" alt="WX20200428-120411@2x.png"></p>
+<p>一般情况下需要配置 Docker 镜像加速器：</p>
+<p><img src="http://ww1.sinaimg.cn/large/b473b473ly1ge9co91k5cj21tc0oidqa.jpg" alt="WX20200428-120544@2x.png"></p>
+<h2 id="2-Docker-基础命令"><a href="#2-Docker-基础命令" class="headerlink" title="2.Docker 基础命令"></a>2.Docker 基础命令</h2><p>Docker 进程命令（以 Debian 系 Linux 系统为例）：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">启动 Docker 进程</span></span><br><span class="line">service docker start</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">重启 Docker 进程</span></span><br><span class="line">service docker restart</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">关闭 Docker 进程</span></span><br><span class="line">service docker stop</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">查看 Docker 进程状态</span></span><br><span class="line">service docker status</span><br></pre></td></tr></table></figure>
+
+<p>Docker 镜像命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">查看已有镜像</span></span><br><span class="line">docker images</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">查看镜像id</span></span><br><span class="line">docker images -q</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">搜索镜像</span></span><br><span class="line">docker search 镜像名称</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">拉取镜像</span></span><br><span class="line">docker pull 镜像名称</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">删除镜像</span></span><br><span class="line">docker rmi 镜像id</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">删除本地所有镜像</span></span><br><span class="line">docker rmi `docker images -q`</span><br></pre></td></tr></table></figure>
+
+<p>Docker 容器命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">查看正在运行的容器</span></span><br><span class="line">docker ps</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">查看所有的容器</span></span><br><span class="line">docker ps -a</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">创建并启动容器（参数说明见下文）</span></span><br><span class="line">docker run 参数</span><br><span class="line">docker run -id -p 8080:8080 -v ~/docker:/root/data --name=container_1 redis</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">进入容器（以此方式进入容器，退出时容器不会关闭）</span></span><br><span class="line">docker exec 参数</span><br><span class="line">docker exec -it c1aac1ba3552 /bin/bash</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">停止容器</span></span><br><span class="line">docker stop 容器名称</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">启动容器</span></span><br><span class="line">docker start 容器名称</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">删除容器</span></span><br><span class="line">docker rm 容器名称</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">查看容器信息</span></span><br><span class="line">docker inspect 容器名称</span><br></pre></td></tr></table></figure>
+
+<p>其中，关于运行/进入容器参数的说明：</p>
+<ul>
+<li>-i:保持容器运行。通常与 -t 同时使用。加入it这两个参数后，容器创建后自动进入容器中，退出容器后，容器自动关闭。</li>
+<li>-t:为容器重新分配一个伪输入终端，通常与 -i 同时使用。</li>
+<li>-d:以守护(后台)模式运行容器。创建一个容器在后台运行，需要使用docker exec 进入容器。退出后，容器不会关闭。</li>
+<li>-it 创建的容器一般称为交互式容器，-id 创建的容器一般称为守护式容器。</li>
+<li>–name:为创建的容器命名。</li>
+<li>-p:端口映射，将容器端口映射到宿主机端口。</li>
+<li>-v:数据卷，下文有详细介绍。</li>
+</ul>
+<h2 id="3-Docker-容器的数据卷"><a href="#3-Docker-容器的数据卷" class="headerlink" title="3. Docker 容器的数据卷"></a>3. Docker 容器的数据卷</h2><p>关于 Docker 数据卷的概念：</p>
+<p><img src="http://ww1.sinaimg.cn/large/b473b473ly1ge9d8bpyg2j21om0u845q.jpg" alt="WX20200428-122501@2x.png"></p>
+<p>配置 Docker 数据卷：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run ... –v 宿主机目录(文件):容器内目录(文件) ...</span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<ul>
+<li>目录必须是绝对路径</li>
+<li>如果目录不存在，会自动创建</li>
+<li>可以挂载多个数据卷</li>
+</ul>
+<p><strong>如果要进行多个容器之间进行数据交换如何处理？</strong></p>
+<ol>
+<li>多个容器挂载同一个数据卷</li>
+<li>使用数据卷容器</li>
+</ol>
+<p>配置数据卷容器：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">创建启动c3数据卷容器，使用 –v 参数 设置数据卷</span></span><br><span class="line">docker run –it --name=c3 –v /volume centos:7 /bin/bash</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">创建启动 c1 c2 容器，使用 –-volumes-from 参数 设置数据卷</span></span><br><span class="line">docker run –it --name=c1 --volumes-from c3 centos:7 /bin/bash </span><br><span class="line">docker run –it --name=c2 --volumes-from c3 centos:7 /bin/bash</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-Docker-的应用部署"><a href="#4-Docker-的应用部署" class="headerlink" title="4.Docker 的应用部署"></a>4.Docker 的应用部署</h2><h3 id="一、部署MySQL"><a href="#一、部署MySQL" class="headerlink" title="一、部署MySQL"></a>一、部署MySQL</h3><ol>
+<li>搜索mysql镜像</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker search mysql</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>拉取mysql镜像</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull mysql:5.6</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>创建容器，设置端口映射、目录映射</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 在/root目录下创建mysql目录用于存储mysql数据信息</span></span><br><span class="line">mkdir ~/mysql</span><br><span class="line">cd ~/mysql</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run -id \</span><br><span class="line">-p 3307:3306 \</span><br><span class="line">--name=c_mysql \</span><br><span class="line">-v $PWD/conf:/etc/mysql/conf.d \</span><br><span class="line">-v $PWD/logs:/logs \</span><br><span class="line">-v $PWD/data:/var/lib/mysql \</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=123456 \</span><br><span class="line">mysql:5.6</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>参数说明：<ul>
+<li><strong>-p 3307:3306</strong>：将容器的 3306 端口映射到宿主机的 3307 端口。</li>
+<li><strong>-v $PWD/conf:/etc/mysql/conf.d</strong>：将主机当前目录下的 conf/my.cnf 挂载到容器的 /etc/mysql/my.cnf。配置目录</li>
+<li><strong>-v $PWD/logs:/logs</strong>：将主机当前目录下的 logs 目录挂载到容器的 /logs。日志目录</li>
+<li><strong>-v $PWD/data:/var/lib/mysql</strong> ：将主机当前目录下的data目录挂载到容器的 /var/lib/mysql 。数据目录</li>
+<li><strong>-e MYSQL_ROOT_PASSWORD=123456：</strong>初始化 root 用户的密码。</li>
+</ul>
+</li>
+</ul>
+<ol start="4">
+<li>进入容器，操作mysql</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec –it c_mysql /bin/bash</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>使用外部机器连接容器中的mysql</li>
+</ol>
+<hr>
+<h3 id="二、部署Tomcat"><a href="#二、部署Tomcat" class="headerlink" title="二、部署Tomcat"></a>二、部署Tomcat</h3><ol>
+<li>搜索tomcat镜像</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker search tomcat</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>拉取tomcat镜像</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull tomcat</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>创建容器，设置端口映射、目录映射</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 在/root目录下创建tomcat目录用于存储tomcat数据信息</span></span><br><span class="line">mkdir ~/tomcat</span><br><span class="line">cd ~/tomcat</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -id --name=c_tomcat \</span><br><span class="line">-p 8080:8080 \</span><br><span class="line">-v $PWD:/usr/local/tomcat/webapps \</span><br><span class="line">tomcat</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>参数说明：</p>
+<ul>
+<li><p><strong>-p 8080:8080：</strong>将容器的8080端口映射到主机的8080端口</p>
+<p><strong>-v $PWD:/usr/local/tomcat/webapps：</strong>将主机中当前目录挂载到容器的webapps</p>
+</li>
+</ul>
+</li>
+</ul>
+<ol start="4">
+<li>使用外部机器访问tomcat</li>
+</ol>
+<hr>
+<h3 id="三、部署Redis"><a href="#三、部署Redis" class="headerlink" title="三、部署Redis"></a>三、部署Redis</h3><ol>
+<li>搜索redis镜像</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker search redis</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>拉取redis镜像</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull redis:5.0</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>创建容器，设置端口映射</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -id --name=c_redis -p 6379:6379 redis:5.0</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>使用外部机器连接redis</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./redis-cli.exe -h 192.168.149.135 -p 6379</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-Dockerfile"><a href="#5-Dockerfile" class="headerlink" title="5.Dockerfile"></a>5.Dockerfile</h2><h3 id="一、Docker-的镜像原理"><a href="#一、Docker-的镜像原理" class="headerlink" title="一、Docker 的镜像原理"></a>一、Docker 的镜像原理</h3><p><img src="http://ww1.sinaimg.cn/large/b473b473ly1ge9dkolo0hj21r80x27fp.jpg" alt="WX20200428-123655@2x.png"></p>
+<p><img src="http://ww1.sinaimg.cn/large/b473b473ly1ge9dl1p1gnj21q20kk43h.jpg" alt="WX20200428-123717@2x.png"></p>
+<h3 id="二、Docker-的镜像制作"><a href="#二、Docker-的镜像制作" class="headerlink" title="二、Docker 的镜像制作"></a>二、Docker 的镜像制作</h3><ol>
+<li><p>将容器转为镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">将容器转为镜像</span></span><br><span class="line">docker commit 容器id 镜像名称:版本号</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">将已有镜像保存成压缩文件</span></span><br><span class="line">docker save -o 压缩文件名称 已有镜像名称:版本号</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">从压缩文件加载镜像</span></span><br><span class="line">docker load –i 压缩文件名称</span><br></pre></td></tr></table></figure>
+
+<p>使用该方法，使用数据卷的新建的文件不会被打包在镜像内，而非数据卷目录下创建的文件会被打包在镜像之中。</p>
+</li>
+<li><p>使用Dockerfile</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker bulid –f dockerfile文件路径 –t 镜像名称:版本</span><br></pre></td></tr></table></figure>
+
+<p>编写 Dockerfile 的例子（了解）：</p>
+<p><img src="http://ww1.sinaimg.cn/large/b473b473ly1ge9duwx4bsj21fe0u8dlk.jpg" alt="WX20200428-124645@2x.png"></p>
+<p><img src="http://ww1.sinaimg.cn/large/b473b473ly1ge9dv94ka0j21dy0tcgqg.jpg" alt="WX20200428-124705@2x.png"></p>
+</li>
+</ol>
+
+  </article>
+  <aside class="table-content" id="site-toc">
+  <div class="table-content-title">
+    <i class="fa fa-arrow-right fa-lg" id="site-toc-hide-btn"></i>
+    <span>目录</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-初始Docker"><span class="toc-text">1.初始Docker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Docker-基础命令"><span class="toc-text">2.Docker 基础命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Docker-容器的数据卷"><span class="toc-text">3. Docker 容器的数据卷</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Docker-的应用部署"><span class="toc-text">4.Docker 的应用部署</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#一、部署MySQL"><span class="toc-text">一、部署MySQL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#二、部署Tomcat"><span class="toc-text">二、部署Tomcat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三、部署Redis"><span class="toc-text">三、部署Redis</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Dockerfile"><span class="toc-text">5.Dockerfile</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#一、Docker-的镜像原理"><span class="toc-text">一、Docker 的镜像原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#二、Docker-的镜像制作"><span class="toc-text">二、Docker 的镜像制作</span></a></li></ol></li></ol>
+  </div>
+</aside>
+  
+    <aside class="passage-copyright">
+      <div>本文作者: 刘点石</div>
+      
+        <div>
+          原文链接: 
+          <a href="" target="_blank">https://dianshiblog.github.io/passages/2020-4-28-Docker/</a>
+        </div>
+      
+      <div>
+        版权声明: 本博客所有文章除特别声明外, 均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 许可协议. 转载请注明出处!
+      </div>
+    </aside>
+  
+  
+    <div class="passage-tags">
+     
+      <a href="/tags/Docker/"><i class="fa fa-tags"></i>Docker</a>
+    
+    </div>
+  
+</div>
+
+    </main>
+    
+    <div class="site-footer-wrapper">
+  <footer class="site-footer">
+    
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">博客推荐</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://godbmw.com/" target="_blank">GodBMW</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="http://ruanyifeng.com/" target="_blank">阮一峰的个人网站</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">系列教程</h5>
+          
+            <span class="site-footer-item">
+              <a href="" target="_self">暂无</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">抓到我</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://weibo.com/u/3027481715" target="_blank">微博</a>
+            </span>
+          
+        </div>
+      
+    
+    <div class="site-footer-info">
+      <i class="fa fa-clock-o"></i> 本站已稳定运行<span id="site-time"></span>
+    </div>
+    
+      <div class="site-footer-info">
+        <i class="fa fa-paw"></i> 您是本站第 <span id="site-count"></span> 位访客
+      </div>
+    
+    
+      <div class="site-footer-info">
+        <i class="fa fa-at"></i> Email: dianshiliu@163.com
+      </div>
+    
+    <div class="site-footer-info">
+      <i class="fa fa-copyright"></i> 
+      2019 <a href="https://github.com/dongyuanxin/theme-ad/" target="_blank">Theme-AD</a>.
+      Created by <a href="https://godbmw.com/" target="_blank">GodBMW</a>.
+      All rights reserved.
+    </div>
+  </footer>
+</div>
+    <div id="site-layer" style="display:none;">
+  <div class="site-layer-content">
+    <div class="site-layer-header">
+      <span class="site-layer-header-title" id="site-layer-title"></span>
+      <i class="fa fa-close" id="site-layer-close"></i>
+    </div>
+    <div class="site-layer-body" id="site-layer-container">
+      <div class="site-layer-input" id="site-layer-search" style="display: none;">
+        <div class="site-layer-input-choose">
+          <a href="javascript:void(0);" title="Change Search Engine">Google</a>
+        </div>
+        <input type="text">
+        <i class="fa fa-search"></i>
+      </div>
+      
+        <div class="site-layer-reward" id="site-layer-reward" style="display: none;">
+          
+            <div>
+              <img src="/images/wechat.png" alt="WeChat">
+              
+                <p>WeChat</p>
+              
+            </div>
+          
+            <div>
+              <img src="/images/alipay.png" alt="AliPay">
+              
+                <p>AliPay</p>
+              
+            </div>
+          
+        </div>
+      
+      <div id="site-layer-welcome" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+    
+
+<div class="bottom-bar">
+  <div class="bottom-bar-left">
+    <a href="javascript:void(0);" data-enable="false">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <a href="/passages/2020-1-8-Tomcat/" data-enable="true">
+      <i class="fa fa-arrow-right"></i>
+    </a>
+  </div>
+  <div class="bottom-bar-right">
+    <a href="javascript:void(0);" data-enable="true" id="site-toc-show-btn">
+      <i class="fa fa-bars"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="site-toggle-share-btn">
+      <i class="fa fa-share-alt"></i>
+    </a>
+    
+      <a href="javascript:void(0);" id="site-reward">
+        <i class="fa fa-thumbs-up"></i>
+      </a>
+    
+    <a href="javascript:void(0);" id="back-top-btn">
+      <i class="fa fa-chevron-up"></i>
+    </a>
+  </div>
+</div>
+    <div id="share-btn">
+  
+    <a id="share-btn-twitter" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-twitter"></i>
+    </a>
+  
+  
+    <a id="share-btn-facebook" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-facebook"></i>
+    </a>
+  
+  
+    <a id="share-btn-weibo" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-weibo"></i>
+    </a>
+  
+  
+    <a id="share-btn-qq" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-qq"></i>
+    </a>
+  
+  
+    <a id="share-btn-wechat" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-wechat"></i>
+    </a>
+  
+</div>
+    
+
+
+
+
+
+    
+  </body>
+</html>
