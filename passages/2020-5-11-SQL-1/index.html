@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Liu Dianshi" />
+  
+  
+  <title>「CURD 程序员系列」高性能 SQL 计划 Day 1 | Dianshi Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="SQL,Java,MySQL," />
+  
+
+  
+  <meta name="description" content="刘点石的小站">
+
+  
+
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js" async></script>
+  
+
+  
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+  
+
+  
+
+  
+
+  <script>
+  // theme-ad's config script
+  // it can be used in every script
+  
+  window.AD_CONFIG = {
+    leancloud: {"appid":"Hyq9wkH495DgNHWhDQCOfQSp-gzGzoHsz","appkey":"WaR7nrzhliHj9aVwdQzkdlGd","comment":false,"count":true},
+    welcome: {"enable":false,"interval":30},
+    start_time: "2019-12-14",
+    passwords: ["efe07af7441da2b69c4a41e42e73be4db47f66010a56900788a458354a7373ec", ],
+    is_post: true,
+    lock: false,
+    author: "Liu Dianshi",
+    share: {"twitter":true,"facebook":true,"weibo":true,"qq":true,"wechat":true},
+    mathjax: true,
+    page_type: "",
+    root: "/"
+  };
+</script>
+
+  
+<script src="/vendor/sha256.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/index.js"></script>
+<script src="/vendor/qrcode.min.js"></script>
+
+
+  
+    <link rel="icon" href="/images/favicon.ico">
+    <link rel="apple-touch-icon" href="/images/touch-icon.png">
+  
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  
+<link rel="stylesheet" href="/css/index.css">
+<link rel="stylesheet" href="/styles/components/highlight/highlight.css">
+
+
+  
+<meta name="generator" content="Hexo 4.1.1"></head>
+  <body>
+    <header class="site-header">
+  <div class="site-header-brand">
+    
+      <span class="site-header-brand-title">
+        <a href="/">Dianshi</a>
+      </span>
+    
+    
+      <span class="site-header-brand-motto"> | 安静写些东西</span>
+    
+  </div>
+  <div class="site-header-right">
+    <nav class="site-header-navigation">
+      
+        <a href="/" target="_self">首页</a>
+      
+        <a href="/archives/" target="_self">归档</a>
+      
+        <a href="/tags/" target="_self">标签</a>
+      
+        <a href="/categories/" target="_self">分类</a>
+      
+        <a href="/about/" target="_self">关于</a>
+      
+    </nav>
+    <div class="site-header-btn">
+      
+        <a href="https://github.com/LiuDianshi" target="_blank" id="site-github">
+          <i class="fa fa-github-alt"></i>
+        </a>
+      
+      <a href="javascript:void(0);" id="site-search">
+        <i class="fa fa-search"></i>
+      </a>
+      <a href="javascript:void(0);" id="site-nav-btn">
+        <i class="fa fa-ellipsis-v"></i>
+      </a>
+    </div>
+  </div>
+</header>
+<nav class="table-content" id="site-nav">
+  <div class="table-content-title">
+    <span>导航</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc">
+      
+        <li class="toc-item">
+          <a href="/" target="_self">
+            首页
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/archives/" target="_self">
+            归档
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/tags/" target="_self">
+            标签
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/categories/" target="_self">
+            分类
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/about/" target="_self">
+            关于
+          </a>
+        </li>
+      
+    </ol>
+  </div>
+</nav>
+<div id="site-process"></div>
+    <main>
+      
+  <div class="passage">
+  <div class="passage-meta">
+    <span>
+      <i class="fa fa-calendar"></i>2020-05-11
+    </span>
+    
+      <span>
+        | <a href="/categories/SQL/"><i class="fa fa-bookmark"></i>SQL</a>
+      </span>
+    
+    
+      <span>
+        | <i class="fa fa-unlock-alt"></i>UNLOCK
+      </span>
+    
+  </div>
+  <h1 class="passage-title">
+    「CURD 程序员系列」高性能 SQL 计划 Day 1
+  </h1>
+  
+  <article class="passage-article">
+    <p>鉴于毕业之后大概率去当 CURD 程序员的需要，本计划应运而生。但是我目前写 SQL 的水平仅仅停留在基础的增删改查阶段，甚至比较复杂的多表查询都不熟练，显然无法胜任该岗位。为了提高 SQL 水平，从今天开始，我将主要围绕 《MySQL 必知必会》、《SQL 进阶教程》、《高性能 MySQL》展开学习，开启“高性能 SQL”计划。</p>
+<h2 id="Part-I-SQL-基础入门"><a href="#Part-I-SQL-基础入门" class="headerlink" title="Part I. SQL 基础入门"></a>Part I. SQL 基础入门</h2><h4 id="1-了解数据库和表"><a href="#1-了解数据库和表" class="headerlink" title="1.了解数据库和表"></a>1.了解数据库和表</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">SHOW DATABASES; #显示所有的数据库</span><br><span class="line">SHOW TABLES; #显示正在使用的数据库中所有的表</span><br><span class="line"></span><br><span class="line">SHOW COLUMNS FROM customers;#显示表的列的信息，包含字段名、数据类型、默认值等信息</span><br><span class="line">DESCRIBE customers;#与上一条功能相同</span><br><span class="line"></span><br><span class="line">SHOW STATUS;#显示服务器状态</span><br><span class="line"></span><br><span class="line">SHOW CREATE DATABASE stu_info;#显示创建数据库的SQL语句</span><br><span class="line">SHOW CREATE TABLE stu;#显示创建表的SQL语句</span><br><span class="line"></span><br><span class="line">SHOW GRANTS;#显示授予用户的安全权限</span><br><span class="line"></span><br><span class="line">SHOW ERRORS;#显示错误信息</span><br><span class="line">SHOW WARNINGS;#显示警告信息</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-SELECT-语句"><a href="#2-SELECT-语句" class="headerlink" title="2.SELECT 语句"></a>2.SELECT 语句</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">SELECT prod_name </span><br><span class="line">FROM products;#检索单列</span><br><span class="line"></span><br><span class="line">SELECT prod_id, prod_name, prod_price</span><br><span class="line">FROM products;#检索多列</span><br><span class="line"></span><br><span class="line">SELECT * from products;#检索所有列。一般来说，除非你确实需要表中的每个列，否则最好别使用*通配符</span><br><span class="line"></span><br><span class="line">SELECT DISTINCT vend_id</span><br><span class="line">FROM products;#使用DISTINCT关键字来实现结果去重</span><br><span class="line"></span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">LIMIT 5,5;#使用LIMIT关键字来限制结果。表示返回五个结果（从第一行开始）。</span><br><span class="line"></span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">LIMIT 5,5;#表示返回从第五行开始的五行结果。</span><br><span class="line"></span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">LIMIT 5 OFFSET 5;#与上一语句功能相同，使用OFFSET关键字增强可读性。</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-排序检索数据"><a href="#3-排序检索数据" class="headerlink" title="3.排序检索数据"></a>3.排序检索数据</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">ORDER BY prod_name;#对检索出的结果按照prod_name字母顺序排序</span><br><span class="line"></span><br><span class="line">SELECT prod_id, prod_price, prod_name</span><br><span class="line">FROM products</span><br><span class="line">ORDER BY prod_price, prod_name;#先按照prod_price进行排序，价格相同的项再按照prod_name排序</span><br><span class="line"></span><br><span class="line">SELECT prod_id, prod_price, prod_name</span><br><span class="line">FROM products</span><br><span class="line">ORDER BY prod_price DESC;#使用DESC关键字进行降序排序。进行升序的关键字是ASC，MySQL默认使用升序。</span><br><span class="line"></span><br><span class="line">SELECT prod_id, prod_price, prod_name</span><br><span class="line">FROM products</span><br><span class="line">ORDER BY prod_price DESC, prod_name;#DESC关键字只作用于其前面的一列。该语句prod_price为降序，prod_name为升序</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-过滤数据"><a href="#4-过滤数据" class="headerlink" title="4.过滤数据"></a>4.过滤数据</h4><p>注意：WHERE 子句应该在 ORDER BY 子句之后。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">SELECT prod_name,prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_price &#x3D; 2.50;#例子</span><br><span class="line"></span><br><span class="line">#WHERE子句中的操作符基本与平时使用的基本一致，但有三个值得注意的点</span><br><span class="line">#1.MySQL中的不等于既可以使用 &lt;&gt; ,也可以使用 !&#x3D;。</span><br><span class="line">#2.MySQL对于varchar类型的字段默认不区分大小写。</span><br><span class="line">#3.进行值比较时，如果将值与串类型（varchar类型）的列比较时要使用引号，与数值列进行比较时则不需要引号。</span><br><span class="line"></span><br><span class="line">SELECT prod_name, prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_price BETWEEN 5 AND 10; &#x2F;&#x2F;范围值检查</span><br><span class="line"></span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_price IS NULL;&#x2F;&#x2F;空值检查</span><br></pre></td></tr></table></figure>
+
+<p>以上介绍了WHERE子句的基本用法，接下来是其进阶的组合用法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#1.AND 逻辑操作符</span><br><span class="line">SELECT prod_id, prod_price, prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id &#x3D; 1003 AND prod_price &lt;&#x3D; 10;</span><br><span class="line"></span><br><span class="line">#2.OR 逻辑操作符</span><br><span class="line">SELECT prod_name, prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id &#x3D; 1002 OR vend_id &#x3D; 1003;</span><br><span class="line"></span><br><span class="line">#注意：AND 和 OR 操作符存在优先级的问题，AND 的优先级高于 OR，可以通过括号来改变优先级。</span><br><span class="line">#“任何时候使用具有AND和OR操作符的WHERE子句，都应该使用圆括号明确地分组操作符。不要过分依赖默认计算次序，即使它确实是你想要的东西也是如此。”</span><br><span class="line"></span><br><span class="line">#3.IN 操作符</span><br><span class="line">SELECT prod_name, prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id IN (1002,1003)</span><br><span class="line">ORDER BY prod_name;</span><br><span class="line">#使用 IN 操作符实际上完成了与 OR 相同的功能。但是使用 IN 操作符书写简单、逻辑清晰而且速度快。</span><br><span class="line"></span><br><span class="line">#4.NOT 操作符</span><br><span class="line">SELECT prod_name, prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id NOT IN (1002,1003)</span><br><span class="line">ORDER BY prod_name;</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-使用通配符进行过滤"><a href="#5-使用通配符进行过滤" class="headerlink" title="5.使用通配符进行过滤"></a>5.使用通配符进行过滤</h4><p>MySQL 中主要是使用 LIKE 操作符进行通配操作，LIKE指示MySQL，后跟的搜索模式利用通配符匹配而不是直接相等匹配进行比较。</p>
+<p>首先是几个名词的解释：</p>
+<ul>
+<li>通配符（wildcard）: 用来匹配值的一部分的特殊字符。</li>
+<li>“搜索模式（search pattern）: 由字面值、通配符或两者组合构成的搜索条件。</li>
+<li>谓词（predicate）: 返回值为真值（true/false/unknown）的函数。从技术上说，LIKE是谓词而不是操作符。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#1.百分号通配符</span><br><span class="line"># % 表示任何字符出现任意次数，包括0次</span><br><span class="line">SELECT prod_id, prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name LIKE &#39;jet%&#39;;#找出所有以jet起头的产品</span><br><span class="line"># % 可以有很多种使用方式，如&#39;%anvil%&#39;、&#39;s%e&#39;等。</span><br><span class="line">#注意：即使是WHERE prod_name LIKE &#39;%&#39;也不能匹配用值NULL作为产品名的行。</span><br><span class="line"></span><br><span class="line">#2.下划线通配符</span><br><span class="line"># _ 表示任意字符出现一次，并且只能是一次</span><br><span class="line">SELECT prod_id, prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name LIKE &#39;_ ton anvil&#39;;</span><br></pre></td></tr></table></figure>
+
+<p>使用通配符的注意事项：</p>
+<ul>
+<li>不要过度使用通配符。如果其他操作符能达到相同的目的，应该使用其他操作符；</li>
+<li>在确实需要使用通配符时，除非绝对有必要，否则不要把它们用在搜索模式的开始处。把通配符置于搜索模式的开始处，搜索起来是最慢的；</li>
+<li>仔细注意通配符的位置。如果放错地方，可能不会返回想要的数据。</li>
+</ul>
+<h4 id="6-使用正则表达式进行搜索"><a href="#6-使用正则表达式进行搜索" class="headerlink" title="6.使用正则表达式进行搜索"></a>6.使用正则表达式进行搜索</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">#1.基本字符匹配</span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#39;.000&#39;</span><br><span class="line">ORDER BY prod_name;#使用REGEXP关键字匹配，匹配以任意字符开头以000结尾的产品名称</span><br><span class="line">#注意：使用正则表达式匹配默认是不区分大小写的，可以在 REGEXP 后面添加 BINARY 关键字区分大小写</span><br><span class="line"></span><br><span class="line">#2.OR 匹配</span><br><span class="line">“SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#39;1000|2000&#39;</span><br><span class="line">ORDER BY prod_name;#匹配产品名包含1000或2000的产品</span><br><span class="line">#注意：使用正则表达式的匹配不是整列匹配，而且包含即可</span><br><span class="line"></span><br><span class="line">#3.范围匹配</span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#39;[1-5] Ton&#39;</span><br><span class="line">ORDER BY prod_name;</span><br><span class="line"></span><br><span class="line">#4.特殊匹配</span><br><span class="line">SELECT vend_name</span><br><span class="line">FROM vendors</span><br><span class="line">WHERE vend_name REGEXP &#39;\\.&#39;</span><br><span class="line">ORDER BY vend_name; #转义字符：\\</span><br><span class="line"></span><br><span class="line">#5.匹配字符类</span><br><span class="line">#[:alnum:]	任意字母和数字（同[a-zA-Z0-9]）</span><br><span class="line">#[:alpha:]	任意字符（同[a-zA-Z]）</span><br><span class="line">#[:blank:]	空格和制表（同[\\t]）</span><br><span class="line">#[:cntrl:]	ASCII控制字符（ASCII 0到31和127）</span><br><span class="line">#[:digit:]	任意数字（同[0-9]）</span><br><span class="line">#[:graph:]	与[:print:]相同，但不包括空格</span><br><span class="line">#[:lower:]	任意小写字母（同[a-z]）</span><br><span class="line">#[:print:]	任意可打印字符</span><br><span class="line">#[:punct:]	既不在[:alnum:]又不在[:cntrl:]中的任意字符</span><br><span class="line">#[:space:]	包括空格在内的任意空白字符（同[\\f\\n\\r\\t\\v]）</span><br><span class="line">#[:upper:]	任意大写字母（同[A-Z]）</span><br><span class="line">#[:xdigit:]	任意十六进制数字（同[a-fA-F0-9]）</span><br><span class="line"></span><br><span class="line">#6.匹配多个实例</span><br><span class="line">#*	0个或多个匹配</span><br><span class="line">#+	1个或多个匹配（等于&#123;1,&#125;）</span><br><span class="line">#?	0个或1个匹配（等于&#123;0,1&#125;）</span><br><span class="line">#&#123;n&#125;	指定数目的匹配</span><br><span class="line">#&#123;n,&#125;	不少于指定数目的匹配</span><br><span class="line">#&#123;n,m&#125;	匹配数目的范围（m不超过255）</span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#39;[[:digit:]]&#123;4&#125;&#39;</span><br><span class="line">ORDER BY prod_name;</span><br><span class="line"></span><br><span class="line">#7.定位符</span><br><span class="line">#^	文本的开始</span><br><span class="line">#$	文本的结尾</span><br><span class="line">#[[:	词的开始</span><br><span class="line">#[[:&gt;:]]	词的结尾</span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#39;^[0-9\\.]&#39;</span><br><span class="line">ORDER BY prod_name;</span><br><span class="line">#注意：“LIKE和REGEXP的不同在于，LIKE匹配整个串而REGEXP匹配子串。利用定位符，通过用^开始每个表达式，用$结束每个表达式，可以使REGEXP的作用与LIKE一样。”</span><br></pre></td></tr></table></figure>
+
+<p>未完待续….</p>
+
+  </article>
+  <aside class="table-content" id="site-toc">
+  <div class="table-content-title">
+    <i class="fa fa-arrow-right fa-lg" id="site-toc-hide-btn"></i>
+    <span>目录</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-I-SQL-基础入门"><span class="toc-text">Part I. SQL 基础入门</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-了解数据库和表"><span class="toc-text">1.了解数据库和表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-SELECT-语句"><span class="toc-text">2.SELECT 语句</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-排序检索数据"><span class="toc-text">3.排序检索数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-过滤数据"><span class="toc-text">4.过滤数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-使用通配符进行过滤"><span class="toc-text">5.使用通配符进行过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-使用正则表达式进行搜索"><span class="toc-text">6.使用正则表达式进行搜索</span></a></li></ol></li></ol></li></ol>
+  </div>
+</aside>
+  
+    <aside class="passage-copyright">
+      <div>本文作者: 刘点石</div>
+      
+        <div>
+          原文链接: 
+          <a href="" target="_blank">https://dianshiblog.github.io/passages/2020-5-11-SQL-1/</a>
+        </div>
+      
+      <div>
+        版权声明: 本博客所有文章除特别声明外, 均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 许可协议. 转载请注明出处!
+      </div>
+    </aside>
+  
+  
+    <div class="passage-tags">
+     
+      <a href="/tags/Java/"><i class="fa fa-tags"></i>Java</a>
+     
+      <a href="/tags/MySQL/"><i class="fa fa-tags"></i>MySQL</a>
+    
+    </div>
+  
+</div>
+
+    </main>
+    
+    <div class="site-footer-wrapper">
+  <footer class="site-footer">
+    
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">博客推荐</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://godbmw.com/" target="_blank">GodBMW</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="http://ruanyifeng.com/" target="_blank">阮一峰的个人网站</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">系列教程</h5>
+          
+            <span class="site-footer-item">
+              <a href="" target="_self">暂无</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">抓到我</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://weibo.com/u/3027481715" target="_blank">微博</a>
+            </span>
+          
+        </div>
+      
+    
+    <div class="site-footer-info">
+      <i class="fa fa-clock-o"></i> 本站已稳定运行<span id="site-time"></span>
+    </div>
+    
+      <div class="site-footer-info">
+        <i class="fa fa-paw"></i> 您是本站第 <span id="site-count"></span> 位访客
+      </div>
+    
+    
+      <div class="site-footer-info">
+        <i class="fa fa-at"></i> Email: dianshiliu@163.com
+      </div>
+    
+    <div class="site-footer-info">
+      <i class="fa fa-copyright"></i> 
+      2019 <a href="https://github.com/dongyuanxin/theme-ad/" target="_blank">Theme-AD</a>.
+      Created by <a href="https://godbmw.com/" target="_blank">GodBMW</a>.
+      All rights reserved.
+    </div>
+  </footer>
+</div>
+    <div id="site-layer" style="display:none;">
+  <div class="site-layer-content">
+    <div class="site-layer-header">
+      <span class="site-layer-header-title" id="site-layer-title"></span>
+      <i class="fa fa-close" id="site-layer-close"></i>
+    </div>
+    <div class="site-layer-body" id="site-layer-container">
+      <div class="site-layer-input" id="site-layer-search" style="display: none;">
+        <div class="site-layer-input-choose">
+          <a href="javascript:void(0);" title="Change Search Engine">Google</a>
+        </div>
+        <input type="text">
+        <i class="fa fa-search"></i>
+      </div>
+      
+        <div class="site-layer-reward" id="site-layer-reward" style="display: none;">
+          
+            <div>
+              <img src="/images/wechat.png" alt="WeChat">
+              
+                <p>WeChat</p>
+              
+            </div>
+          
+            <div>
+              <img src="/images/alipay.png" alt="AliPay">
+              
+                <p>AliPay</p>
+              
+            </div>
+          
+        </div>
+      
+      <div id="site-layer-welcome" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+    
+
+<div class="bottom-bar">
+  <div class="bottom-bar-left">
+    <a href="javascript:void(0);" data-enable="false">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <a href="/passages/2020-4-28-Docker/" data-enable="true">
+      <i class="fa fa-arrow-right"></i>
+    </a>
+  </div>
+  <div class="bottom-bar-right">
+    <a href="javascript:void(0);" data-enable="true" id="site-toc-show-btn">
+      <i class="fa fa-bars"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="site-toggle-share-btn">
+      <i class="fa fa-share-alt"></i>
+    </a>
+    
+      <a href="javascript:void(0);" id="site-reward">
+        <i class="fa fa-thumbs-up"></i>
+      </a>
+    
+    <a href="javascript:void(0);" id="back-top-btn">
+      <i class="fa fa-chevron-up"></i>
+    </a>
+  </div>
+</div>
+    <div id="share-btn">
+  
+    <a id="share-btn-twitter" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-twitter"></i>
+    </a>
+  
+  
+    <a id="share-btn-facebook" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-facebook"></i>
+    </a>
+  
+  
+    <a id="share-btn-weibo" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-weibo"></i>
+    </a>
+  
+  
+    <a id="share-btn-qq" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-qq"></i>
+    </a>
+  
+  
+    <a id="share-btn-wechat" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-wechat"></i>
+    </a>
+  
+</div>
+    
+
+
+
+
+
+    
+  </body>
+</html>
