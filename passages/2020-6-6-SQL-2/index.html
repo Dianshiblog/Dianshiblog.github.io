@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Liu Dianshi" />
+  
+  
+  <title>「CURD 程序员系列」高性能 SQL 计划 Day 2 | Dianshi Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="SQL,Java,MySQL," />
+  
+
+  
+  <meta name="description" content="刘点石的小站">
+
+  
+
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js" async></script>
+  
+
+  
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+  
+
+  
+
+  
+
+  <script>
+  // theme-ad's config script
+  // it can be used in every script
+  
+  window.AD_CONFIG = {
+    leancloud: {"appid":"Hyq9wkH495DgNHWhDQCOfQSp-gzGzoHsz","appkey":"WaR7nrzhliHj9aVwdQzkdlGd","comment":false,"count":true},
+    welcome: {"enable":false,"interval":30},
+    start_time: "2019-12-14",
+    passwords: ["efe07af7441da2b69c4a41e42e73be4db47f66010a56900788a458354a7373ec", ],
+    is_post: true,
+    lock: false,
+    author: "Liu Dianshi",
+    share: {"twitter":true,"facebook":true,"weibo":true,"qq":true,"wechat":true},
+    mathjax: true,
+    page_type: "",
+    root: "/"
+  };
+</script>
+
+  
+<script src="/vendor/sha256.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/index.js"></script>
+<script src="/vendor/qrcode.min.js"></script>
+
+
+  
+    <link rel="icon" href="/images/favicon.ico">
+    <link rel="apple-touch-icon" href="/images/touch-icon.png">
+  
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  
+<link rel="stylesheet" href="/css/index.css">
+<link rel="stylesheet" href="/styles/components/highlight/highlight.css">
+
+
+  
+<meta name="generator" content="Hexo 4.1.1"></head>
+  <body>
+    <header class="site-header">
+  <div class="site-header-brand">
+    
+      <span class="site-header-brand-title">
+        <a href="/">Dianshi</a>
+      </span>
+    
+    
+      <span class="site-header-brand-motto"> | 安静写些东西</span>
+    
+  </div>
+  <div class="site-header-right">
+    <nav class="site-header-navigation">
+      
+        <a href="/" target="_self">首页</a>
+      
+        <a href="/archives/" target="_self">归档</a>
+      
+        <a href="/tags/" target="_self">标签</a>
+      
+        <a href="/categories/" target="_self">分类</a>
+      
+        <a href="/about/" target="_self">关于</a>
+      
+    </nav>
+    <div class="site-header-btn">
+      
+        <a href="https://github.com/LiuDianshi" target="_blank" id="site-github">
+          <i class="fa fa-github-alt"></i>
+        </a>
+      
+      <a href="javascript:void(0);" id="site-search">
+        <i class="fa fa-search"></i>
+      </a>
+      <a href="javascript:void(0);" id="site-nav-btn">
+        <i class="fa fa-ellipsis-v"></i>
+      </a>
+    </div>
+  </div>
+</header>
+<nav class="table-content" id="site-nav">
+  <div class="table-content-title">
+    <span>导航</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc">
+      
+        <li class="toc-item">
+          <a href="/" target="_self">
+            首页
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/archives/" target="_self">
+            归档
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/tags/" target="_self">
+            标签
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/categories/" target="_self">
+            分类
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/about/" target="_self">
+            关于
+          </a>
+        </li>
+      
+    </ol>
+  </div>
+</nav>
+<div id="site-process"></div>
+    <main>
+      
+  <div class="passage">
+  <div class="passage-meta">
+    <span>
+      <i class="fa fa-calendar"></i>2020-06-06
+    </span>
+    
+      <span>
+        | <a href="/categories/SQL/"><i class="fa fa-bookmark"></i>SQL</a>
+      </span>
+    
+    
+      <span>
+        | <i class="fa fa-unlock-alt"></i>UNLOCK
+      </span>
+    
+  </div>
+  <h1 class="passage-title">
+    「CURD 程序员系列」高性能 SQL 计划 Day 2
+  </h1>
+  
+  <article class="passage-article">
+    <h1 id="高性能-SQL-计划-Day-2"><a href="#高性能-SQL-计划-Day-2" class="headerlink" title="高性能 SQL 计划 Day 2"></a>高性能 SQL 计划 Day 2</h1><p>上一次更新竟然是将近一个月之前了，最近因为乱七八糟的事情比较多所以没有更新。上一次的内容主要是《MySQL 必知必会》前九章的内容，今天计划继续。</p>
+<h2 id="Ch-10-创建计算字段"><a href="#Ch-10-创建计算字段" class="headerlink" title="Ch 10.创建计算字段"></a>Ch 10.创建计算字段</h2><p>一般而言，如果检索结果与程序所需要的数据之间有差异，则需要对检索结果进行处理，这个过程既可以在数据库服务器中完成，又可以在客户机应用程序内实现。但一般来说，在数据库服务器上完成这些操作比在客户机中完成要快得多，因为DBMS是设计来快速有效地完成这种处理的。</p>
+<h3 id="1-拼接字段"><a href="#1-拼接字段" class="headerlink" title="1.拼接字段"></a>1.拼接字段</h3><p>在MySQL的<code>SELECT</code>语句中，可使用<code>Concat()</code>函数来拼接两个列。<strong>注意</strong>：多数DBMS使用<code>+</code>或<code>||</code>来实现拼接，MySQL则使用<code>Concat()</code>函数来实现。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">Concat</span>(vend_name, <span class="string">' ('</span>, vend_country, <span class="string">')'</span>)</span><br><span class="line"><span class="keyword">FROM</span> vendors</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> vend_name;</span><br></pre></td></tr></table></figure>
+
+<p>为了方便客户机对于上述拼接结果的使用，可以使用 AS 关键字对结果进行命名，如下所示：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">Concat</span>(<span class="keyword">RTrim</span>(vend_name), <span class="string">' ('</span>, <span class="keyword">RTrim</span>(vend_country), <span class="string">')'</span>) <span class="keyword">AS</span></span><br><span class="line">vend_title</span><br><span class="line"><span class="keyword">FROM</span> vendors</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> vend_name;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-算术运算"><a href="#2-算术运算" class="headerlink" title="2.算术运算"></a>2.算术运算</h3><p>对检索出的数据进行算术运算：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> prod_id,</span><br><span class="line">       quantity,</span><br><span class="line">       item_price,</span><br><span class="line">       quantity*item_price <span class="keyword">AS</span> expanded_price</span><br><span class="line"><span class="keyword">FROM</span> orderitems</span><br><span class="line"><span class="keyword">WHERE</span> order_num = <span class="number">20005</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Ch-11-使用数据处理函数"><a href="#Ch-11-使用数据处理函数" class="headerlink" title="Ch 11.使用数据处理函数"></a>Ch 11.使用数据处理函数</h2><p>需要注意的是，DMBS 中函数的可移植性比较差，几乎每种主要的DBMS的实现都支持其他实现不支持的函数，而且有时差异还很大。因此，在 SQL 中使用函数时，需要写明注释。</p>
+<h3 id="1-使用函数"><a href="#1-使用函数" class="headerlink" title="1.使用函数"></a>1.使用函数</h3><p>MySQL 中所支持的函数主要包含以下几类：</p>
+<ul>
+<li><p>文本处理函数</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 文本处理函数</span></span><br><span class="line"><span class="comment"># Left()	返回串左边的字符</span></span><br><span class="line"><span class="comment"># Length()	返回串的长度</span></span><br><span class="line"><span class="comment"># Locate()	找出串的一个子串</span></span><br><span class="line"><span class="comment"># Lower()	将串转换为小写</span></span><br><span class="line"><span class="comment"># LTrim()	去掉串左边的空格</span></span><br><span class="line"><span class="comment"># Right()	返回串右边的字符</span></span><br><span class="line"><span class="comment"># RTrim()	去掉串右边的空格</span></span><br><span class="line"><span class="comment"># SubString()	返回子串的字符</span></span><br><span class="line"><span class="comment"># Upper()	将串转换为大写</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#例：</span></span><br><span class="line"><span class="keyword">SELECT</span> vend_name, <span class="keyword">UPPER</span>(vend_name) <span class="keyword">AS</span> vend_name_upcase</span><br><span class="line"><span class="keyword">FROM</span> vendors</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> vend_name;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>日期与时间处理函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"># AddDate()	增加一个日期（天、周等）</span><br><span class="line"># AddTime()	增加一个时间（时、分等）</span><br><span class="line"># CurDate()	返回当前日期</span><br><span class="line"># CurTime()	返回当前时间</span><br><span class="line"># Date()	返回日期时间的日期部分</span><br><span class="line"># DateDiff()	计算两个日期之差</span><br><span class="line"># Date_Add()	高度灵活的日期运算函数</span><br><span class="line"># Date_Format()	返回一个格式化的日期或时间串</span><br><span class="line"># Day()	返回一个日期的天数部分</span><br><span class="line"># DayOfWeek()	对于一个日期，返回对应的星期几</span><br><span class="line"># Hour()	返回一个时间的小时部分</span><br><span class="line"># Minute()	返回一个时间的分钟部分</span><br><span class="line"># Month()	返回一个日期的月份部分</span><br><span class="line"># Now()	返回当前日期和时间</span><br><span class="line"># Second()	返回一个时间的秒部分</span><br><span class="line"># Time()	返回一个日期时间的时间部分</span><br><span class="line"># Year()	返回一个日期的年份部分</span><br><span class="line"></span><br><span class="line">#例1，根据订单日期查找</span><br><span class="line"></span><br><span class="line">SELECT cust_id, order_num</span><br><span class="line">FROM orders</span><br><span class="line">WHERE order_date &#x3D; &#39;2005-09-01&#39;;</span><br><span class="line">#以上示例喂错误示例，因为 order_date 可能包含具体时间信息，这样的话就无法匹配成功。</span><br><span class="line"></span><br><span class="line">SELECT cust_id, order_num</span><br><span class="line">FROM orders</span><br><span class="line">WHERE Date(order_date) &#x3D; &#39;2005-09-01&#39;;</span><br><span class="line">#以上为正确示例</span><br><span class="line"></span><br><span class="line">#例2，查找2005年9月份的订单</span><br><span class="line">SELECT cust_id, order_num</span><br><span class="line">FROM orders</span><br><span class="line">WHERE Date(order_date) BETWEEN &#39;2005-09-01&#39; AND &#39;2005-09-30&#39;;</span><br><span class="line">#或</span><br><span class="line">SELECT cust_id, order_num</span><br><span class="line">FROM orders</span><br><span class="line">WHERE Year(order_date) &#x3D; 2005 AND Month(order_date) &#x3D; 9;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数值处理函数</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Abs()	返回一个数的绝对值</span></span><br><span class="line"><span class="comment"># Cos()	返回一个角度的余弦</span></span><br><span class="line"><span class="comment"># Exp()	返回一个数的指数值</span></span><br><span class="line"><span class="comment"># Mod()	返回除操作的余数</span></span><br><span class="line"><span class="comment"># Pi()	返回圆周率</span></span><br><span class="line"><span class="comment"># Rand()	返回一个随机数</span></span><br><span class="line"><span class="comment"># Sin()	返回一个角度的正弦</span></span><br><span class="line"><span class="comment"># Sqrt()	返回一个数的平方根</span></span><br><span class="line"><span class="comment"># Tan()	返回一个角度的正切</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#这类函数比较简单</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Ch-12-汇总数据"><a href="#Ch-12-汇总数据" class="headerlink" title="Ch 12. 汇总数据"></a>Ch 12. 汇总数据</h2><h3 id="1-聚集函数"><a href="#1-聚集函数" class="headerlink" title="1.聚集函数"></a>1.聚集函数</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 主要的聚集函数</span></span><br><span class="line"><span class="comment"># AVG()	返回某列的平均值</span></span><br><span class="line"><span class="comment"># COUNT()	返回某列的行数</span></span><br><span class="line"><span class="comment"># MAX()	返回某列的最大值</span></span><br><span class="line"><span class="comment"># MIN()	返回某列的最小值</span></span><br><span class="line"><span class="comment"># SUM()	返回某列值之和</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>AVG() 函数</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">AVG</span>(prod_price) <span class="keyword">AS</span> avg_price</span><br><span class="line"><span class="keyword">FROM</span> products;</span><br></pre></td></tr></table></figure>
+
+<p>注意：AVG()只能用来确定特定数值列的平均值，而且列名必须作为函数参数给出。为了获得多个列的平均值，必须使用多个AVG()函数。AVG()函数忽略列值为NULL的行。</p>
+</li>
+<li><p>COUNT() 函数</p>
+<p>有两种使用方式。</p>
+<ul>
+<li>使用COUNT(*)对表中行的数目进行计数，不管表列中包含的是空值（NULL）还是非空值。</li>
+<li>使用COUNT(column)对特定列中具有值的行进行计数，忽略NULL值。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(*) <span class="keyword">AS</span> num_cust</span><br><span class="line"><span class="keyword">FROM</span> customers;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(cust_email) <span class="keyword">AS</span> num_cust</span><br><span class="line"><span class="keyword">FROM</span> customers;</span><br></pre></td></tr></table></figure>
+
+<p>注意： 如果指定列名，则指定列的值为空的行被COUNT()函数忽略，但如果COUNT()函数中用的是星号（*），则不忽略。</p>
+</li>
+<li><p>MAX() 函数</p>
+<p>MAX()返回指定列中的最大值。MAX()要求指定列名。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">MAX</span>(prod_price) <span class="keyword">AS</span> max_price</span><br><span class="line"><span class="keyword">FROM</span> products;</span><br></pre></td></tr></table></figure>
+
+<p>虽然MAX()一般用来找出最大的数值或日期值，但MySQL允许将它用来返回任意列中的最大值，包括返回文本列中的最大值。</p>
+<p>注意：MAX()函数忽略列值为NULL的行。</p>
+</li>
+<li><p>MIN() 函数</p>
+<p>MIN()的功能正好与MAX()功能相反，它返回指定列的最小值。与MAX()一样，MIN()要求指定列名。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">MIN</span>(prod_price) <span class="keyword">AS</span> min_price</span><br><span class="line"><span class="keyword">FROM</span> products;</span><br></pre></td></tr></table></figure>
+
+<p>注意： MIN()函数与MAX()函数类似，MySQL允许将它用来返回任意列中的最小值，包括返回文本列中的最小值。MIN() 函数同样忽略列值为NULL的行。</p>
+</li>
+<li><p>SUM() 函数</p>
+<p>SUM()用来返回指定列值的和（总计）。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">SUM</span>(quantity) <span class="keyword">AS</span> items_ordered</span><br><span class="line"><span class="keyword">FROM</span> orderitems</span><br><span class="line"><span class="keyword">WHERE</span> order_num = <span class="number">20005</span>;</span><br></pre></td></tr></table></figure>
+
+<p>注意：SUM()函数忽略列值为NULL的行。</p>
+</li>
+</ul>
+<h3 id="2-聚集不同值"><a href="#2-聚集不同值" class="headerlink" title="2.聚集不同值"></a>2.聚集不同值</h3><p>以上5个聚集函数都可以如下使用：</p>
+<ul>
+<li>对所有的行执行计算，指定ALL参数或不给参数（因为ALL是默认行为）；</li>
+<li>只包含不同的值，指定DISTINCT参数。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">AVG</span>(<span class="keyword">DISTINCT</span> prod_price) <span class="keyword">AS</span> avg_price</span><br><span class="line"><span class="keyword">FROM</span> products</span><br><span class="line"><span class="keyword">WHERE</span> vend_id = <span class="number">1003</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>将 DISTINCT 用于COUNT() 函数：必须用于指定列名的场合，不能用于COUNT(*)。</li>
+<li>将DISTINCT用于MIN()和MAX()函数： 虽然DISTINCT从技术上可用于MIN()和MAX()，但这样做实际上没有价值。一个列中的最小值和最大值不管是否包含不同值都是相同的。</li>
+</ul>
+</li>
+<li><p>组合聚集函数</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(*) <span class="keyword">AS</span> num_items,</span><br><span class="line">       <span class="keyword">MIN</span>(prod_price) <span class="keyword">AS</span> price_min,</span><br><span class="line">       <span class="keyword">MAX</span>(prod_price) <span class="keyword">AS</span> price_max,</span><br><span class="line">       <span class="keyword">AVG</span>(prod_price) <span class="keyword">AS</span> price_avg</span><br><span class="line"><span class="keyword">FROM</span> products;</span><br></pre></td></tr></table></figure>
+
+<p>注意：在指定别名以包含某个聚集函数的结果时，不应该使用表中实际的列名。虽然这样做并非不合法，但使用唯一的名字会使你的SQL更易于理解和使用（以及将来容易排除故障）。</p>
+<h2 id="Ch-13-分组数据"><a href="#Ch-13-分组数据" class="headerlink" title="Ch 13.分组数据"></a>Ch 13.分组数据</h2><p>分组允许把数据分为多个逻辑组，以便能对每个组进行聚集计算。</p>
+<h3 id="1-创建分组"><a href="#1-创建分组" class="headerlink" title="1.创建分组"></a>1.创建分组</h3><p>分组是在SELECT语句的GROUP BY子句中建立的。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> vend_id, <span class="keyword">COUNT</span>(*) <span class="keyword">AS</span> num_prods</span><br><span class="line"><span class="keyword">FROM</span> products</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> vend_id;</span><br></pre></td></tr></table></figure>
+
+<p>​    使用GROUP BY子句有以下规定：</p>
+<ul>
+<li><p>GROUP BY子句可以包含任意数目的列。这使得能对分组进行嵌套，为数据分组提供更细致的控制。</p>
+</li>
+<li><p>如果在GROUP BY子句中嵌套了分组，数据将在最后规定的分组上进行汇总。换句话说，在建立分组时，指定的所有列都一起计算（所以不能从个别的列取回数据）。</p>
+</li>
+<li><p>GROUP BY子句中列出的每个列都必须是检索列或有效的表达式（但不能是聚集函数）。如果在SELECT中使用表达式，则必须在GROUP BY子句中指定相同的表达式。不能使用别名。</p>
+</li>
+<li><p>除聚集计算语句外，SELECT语句中的每个列都必须在GROUP BY子句中给出。</p>
+</li>
+<li><p>如果分组列中具有NULL值，则NULL将作为一个分组返回。如果列中有多行NULL值，它们将分为一组。</p>
+</li>
+<li><p>GROUP BY子句必须出现在WHERE子句之后，ORDER BY子句之前。</p>
+</li>
+<li><p>使用WITH ROLLUP关键字，可以得到每个分组以及每个分组汇总级别（针对每个分组）的值：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> vend_id, <span class="keyword">COUNT</span>(*) <span class="keyword">AS</span> num_prods</span><br><span class="line"><span class="keyword">FROM</span> products</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> vend_id <span class="keyword">WITH</span> <span class="keyword">ROLLUP</span>;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="2-过滤分组"><a href="#2-过滤分组" class="headerlink" title="2.过滤分组"></a>2.过滤分组</h3><p>我们之前所介绍的WHERE子句能够完成对行的过滤，如果要对分组的列进行过滤，需要使用HAVING子句。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> cust_id, <span class="keyword">COUNT</span>(*) <span class="keyword">AS</span> orders</span><br><span class="line"><span class="keyword">FROM</span> orders</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> cust_id</span><br><span class="line"><span class="keyword">HAVING</span> <span class="keyword">COUNT</span>(*) &gt;= <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>注意：所学过的有关WHERE的所有这些技术和选项都适用于HAVING。它们的句法是相同的，只是关键字有差别。</p>
+<p><strong>HAVING和WHERE的差别</strong>：这里有另一种理解方法，WHERE在数据<strong>分组前</strong>进行过滤，HAVING在数据<strong>分组后</strong>进行过滤。这是一个重要的区别，WHERE排除的行不包括在分组中。这可能会改变计算值，从而影响HAVING子句中基于这些值过滤掉的分组。</p>
+<p>同样可以在一个查询语句中同时使用 WHERE 和 HAVING 子句：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> vend_id, <span class="keyword">COUNT</span>(*) <span class="keyword">AS</span> num_prods</span><br><span class="line"><span class="keyword">FROM</span> products</span><br><span class="line"><span class="keyword">WHERE</span> prod_price &gt;= <span class="number">10</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> vend_id</span><br><span class="line"><span class="keyword">HAVING</span> <span class="keyword">COUNT</span>(*) &gt;= <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-分组与排序"><a href="#3-分组与排序" class="headerlink" title="3.分组与排序"></a>3.分组与排序</h3><table>
+<thead>
+<tr>
+<th align="center">ORDER BY</th>
+<th align="center">GROUP BY</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">排序产生的输出</td>
+<td align="center">分组行，但输出可能不是分组的顺序</td>
+</tr>
+<tr>
+<td align="center">任意列都可以使用（甚至非选择的列也可以使用）</td>
+<td align="center">只可能使用选择列或表达式列，而且必须使用每个选择列表达式</td>
+</tr>
+<tr>
+<td align="center">不一定需要</td>
+<td align="center">如果与聚集函数一起使用列（或表达式），则必须使用</td>
+</tr>
+</tbody></table>
+<p>上表的第一条尤为重要， 我们经常发现用GROUP BY分组的数据确实是以分组顺序输出的。但情况并不总是这样，它并不是SQL规范所要求的。此外，用户也可能会要求以不同于分组的顺序排序。仅因为你以某种方式分组数据（获得特定的分组聚集值），并不表示你需要以相同的方式排序输出。应该提供明确的ORDER BY子句，即使其效果等同于GROUP BY子句也是如此。</p>
+<p><strong>总结</strong>：一般在使用GROUP BY子句时，应该也给出ORDER BY子句。这是保证数据正确排序的唯一方法。千万不要仅依赖GROUP BY排序数据。</p>
+<h3 id="4-SELECT子句顺序"><a href="#4-SELECT子句顺序" class="headerlink" title="4.SELECT子句顺序"></a>4.SELECT子句顺序</h3><table>
+<thead>
+<tr>
+<th align="center">子句</th>
+<th align="center">说明</th>
+<th align="center">是否必须使用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">SELECT</td>
+<td align="center">要返回的列或表达式</td>
+<td align="center">是</td>
+</tr>
+<tr>
+<td align="center">FROM</td>
+<td align="center">从中检索数据的表</td>
+<td align="center">仅在从表选择数据中使用</td>
+</tr>
+<tr>
+<td align="center">WHERE</td>
+<td align="center">行级过滤</td>
+<td align="center">否</td>
+</tr>
+<tr>
+<td align="center">GROUP BY</td>
+<td align="center">分组说明</td>
+<td align="center">仅在按组计算聚集时使用</td>
+</tr>
+<tr>
+<td align="center">HAVING</td>
+<td align="center">组级过滤</td>
+<td align="center">否</td>
+</tr>
+<tr>
+<td align="center">ORDER BY</td>
+<td align="center">输出排序顺序</td>
+<td align="center">否</td>
+</tr>
+<tr>
+<td align="center">LIMIT</td>
+<td align="center">限制输出行数</td>
+<td align="center">否</td>
+</tr>
+</tbody></table>
+<h2 id="Ch-14-使用子查询"><a href="#Ch-14-使用子查询" class="headerlink" title="Ch 14.使用子查询"></a>Ch 14.使用子查询</h2><p>所谓子查询（subquery），即嵌套在其他查询中的查询。当不使用联结表查询时，使用简单的子查询可以解决多表查询的问题。下面通过几个例子对子查询进行学习：</p>
+<h3 id="1-利用子查询进行过滤"><a href="#1-利用子查询进行过滤" class="headerlink" title="1.利用子查询进行过滤"></a>1.利用子查询进行过滤</h3><p>对于包含订单号、客户ID、订单日期的每个订单，orders表存储一行。各订单的物品存储在相关的orderitems表中。orders表不存储客户信息。它只存储客户的ID。实际的客户信息存储在customers表中。<br>现在，假如需要列出订购物品TNT2的所有客户，应该怎样检索？</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#1.检索包含物品TNT2的所有订单的编号。</span></span><br><span class="line"><span class="keyword">SELECT</span> order_num</span><br><span class="line"><span class="keyword">FROM</span> orderitems</span><br><span class="line"><span class="keyword">WHERE</span> prod_id = <span class="string">'TNT2'</span>;</span><br><span class="line"><span class="comment">#输出结果为 20005和20007</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#2.检索具有前一步骤列出的订单编号的所有客户的ID。</span></span><br><span class="line"><span class="keyword">SELECT</span> cust_id</span><br><span class="line"><span class="keyword">FROM</span> orders</span><br><span class="line"><span class="keyword">WHERE</span> order_num <span class="keyword">IN</span> (<span class="number">20005</span>,<span class="number">20007</span>);</span><br><span class="line"><span class="comment">#输出结果为10001和10004</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#3.检索前一步骤返回的所有客户ID的客户信息。</span></span><br><span class="line"><span class="keyword">SELECT</span> cust_name, cust_contact</span><br><span class="line"><span class="keyword">FROM</span> customers</span><br><span class="line"><span class="keyword">WHERE</span> cust_id <span class="keyword">IN</span> (<span class="number">10001</span>,<span class="number">10004</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">#4.可以将上述的WHERE子句转换为子查询进行整合</span></span><br><span class="line"><span class="keyword">SELECT</span> cust_name, cust_contact</span><br><span class="line"><span class="keyword">FROM</span> customers</span><br><span class="line"><span class="keyword">WHERE</span> cust_id <span class="keyword">IN</span> (<span class="keyword">SELECT</span> cust_id</span><br><span class="line">                  <span class="keyword">FROM</span> orders</span><br><span class="line">                  <span class="keyword">WHERE</span> order_num <span class="keyword">IN</span> (<span class="keyword">SELECT</span> order_num</span><br><span class="line">                                      <span class="keyword">FROM</span> orderitems</span><br><span class="line">                                      <span class="keyword">WHERE</span> prod_id = <span class="string">'TNT2'</span>));</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：在WHERE子句中使用子查询能够编写出功能很强并且很灵活的SQL语句。对于能嵌套的子查询的数目没有限制，不过在实际使用时由于性能的限制，不能嵌套太多的子查询。</p>
+<p>另外，虽然子查询一般与IN操作符结合使用，但也可以用于测试等于（=）、不等于（&lt;）等。</p>
+<h3 id="2-作为计算字段使用子查询"><a href="#2-作为计算字段使用子查询" class="headerlink" title="2.作为计算字段使用子查询"></a>2.作为计算字段使用子查询</h3><p>假如需要显示customers表中每个客户的订单总数。订单与相应的客户ID存储在orders表中，应该怎样检索？</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#1.从customers表中检索客户列表。</span></span><br><span class="line"><span class="comment">#2.对于检索出的每个客户，统计其在orders表中的订单数目。</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> cust_name,</span><br><span class="line">       cust_state,</span><br><span class="line">       (<span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(*)</span><br><span class="line">        <span class="keyword">FROM</span> orders</span><br><span class="line">        <span class="keyword">WHERE</span> orders.cust_id = customers.cust_id) <span class="keyword">AS</span> orders</span><br><span class="line"><span class="keyword">FROM</span> customers</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> cust_name;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是，这里WHERE子句中使用了<strong>完全限定列名</strong>，当使用<strong>相关子查询</strong>（设计外部查询的子查询）出现列名歧义的时候，必须使用完全限定列名消歧义，否则会出错。</p>
+</li>
+</ul>
+<hr>
+<p>未完待续…</p>
+
+  </article>
+  <aside class="table-content" id="site-toc">
+  <div class="table-content-title">
+    <i class="fa fa-arrow-right fa-lg" id="site-toc-hide-btn"></i>
+    <span>目录</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#高性能-SQL-计划-Day-2"><span class="toc-text">高性能 SQL 计划 Day 2</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-10-创建计算字段"><span class="toc-text">Ch 10.创建计算字段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-拼接字段"><span class="toc-text">1.拼接字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-算术运算"><span class="toc-text">2.算术运算</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-11-使用数据处理函数"><span class="toc-text">Ch 11.使用数据处理函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-使用函数"><span class="toc-text">1.使用函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-12-汇总数据"><span class="toc-text">Ch 12. 汇总数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-聚集函数"><span class="toc-text">1.聚集函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-聚集不同值"><span class="toc-text">2.聚集不同值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-13-分组数据"><span class="toc-text">Ch 13.分组数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-创建分组"><span class="toc-text">1.创建分组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-过滤分组"><span class="toc-text">2.过滤分组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-分组与排序"><span class="toc-text">3.分组与排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-SELECT子句顺序"><span class="toc-text">4.SELECT子句顺序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-14-使用子查询"><span class="toc-text">Ch 14.使用子查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-利用子查询进行过滤"><span class="toc-text">1.利用子查询进行过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-作为计算字段使用子查询"><span class="toc-text">2.作为计算字段使用子查询</span></a></li></ol></li></ol></li></ol>
+  </div>
+</aside>
+  
+    <aside class="passage-copyright">
+      <div>本文作者: 刘点石</div>
+      
+        <div>
+          原文链接: 
+          <a href="" target="_blank">https://dianshiblog.github.io/passages/2020-6-6-SQL-2/</a>
+        </div>
+      
+      <div>
+        版权声明: 本博客所有文章除特别声明外, 均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 许可协议. 转载请注明出处!
+      </div>
+    </aside>
+  
+  
+    <div class="passage-tags">
+     
+      <a href="/tags/Java/"><i class="fa fa-tags"></i>Java</a>
+     
+      <a href="/tags/MySQL/"><i class="fa fa-tags"></i>MySQL</a>
+    
+    </div>
+  
+</div>
+
+    </main>
+    
+    <div class="site-footer-wrapper">
+  <footer class="site-footer">
+    
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">博客推荐</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://godbmw.com/" target="_blank">GodBMW</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="http://ruanyifeng.com/" target="_blank">阮一峰的个人网站</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">系列教程</h5>
+          
+            <span class="site-footer-item">
+              <a href="" target="_self">暂无</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">抓到我</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://weibo.com/u/3027481715" target="_blank">微博</a>
+            </span>
+          
+        </div>
+      
+    
+    <div class="site-footer-info">
+      <i class="fa fa-clock-o"></i> 本站已稳定运行<span id="site-time"></span>
+    </div>
+    
+      <div class="site-footer-info">
+        <i class="fa fa-paw"></i> 您是本站第 <span id="site-count"></span> 位访客
+      </div>
+    
+    
+      <div class="site-footer-info">
+        <i class="fa fa-at"></i> Email: dianshiliu@163.com
+      </div>
+    
+    <div class="site-footer-info">
+      <i class="fa fa-copyright"></i> 
+      2019 <a href="https://github.com/dongyuanxin/theme-ad/" target="_blank">Theme-AD</a>.
+      Created by <a href="https://godbmw.com/" target="_blank">GodBMW</a>.
+      All rights reserved.
+    </div>
+  </footer>
+</div>
+    <div id="site-layer" style="display:none;">
+  <div class="site-layer-content">
+    <div class="site-layer-header">
+      <span class="site-layer-header-title" id="site-layer-title"></span>
+      <i class="fa fa-close" id="site-layer-close"></i>
+    </div>
+    <div class="site-layer-body" id="site-layer-container">
+      <div class="site-layer-input" id="site-layer-search" style="display: none;">
+        <div class="site-layer-input-choose">
+          <a href="javascript:void(0);" title="Change Search Engine">Google</a>
+        </div>
+        <input type="text">
+        <i class="fa fa-search"></i>
+      </div>
+      
+        <div class="site-layer-reward" id="site-layer-reward" style="display: none;">
+          
+            <div>
+              <img src="/images/wechat.png" alt="WeChat">
+              
+                <p>WeChat</p>
+              
+            </div>
+          
+            <div>
+              <img src="/images/alipay.png" alt="AliPay">
+              
+                <p>AliPay</p>
+              
+            </div>
+          
+        </div>
+      
+      <div id="site-layer-welcome" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+    
+
+<div class="bottom-bar">
+  <div class="bottom-bar-left">
+    <a href="javascript:void(0);" data-enable="false">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <a href="/passages/2020-5-11-SQL-1/" data-enable="true">
+      <i class="fa fa-arrow-right"></i>
+    </a>
+  </div>
+  <div class="bottom-bar-right">
+    <a href="javascript:void(0);" data-enable="true" id="site-toc-show-btn">
+      <i class="fa fa-bars"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="site-toggle-share-btn">
+      <i class="fa fa-share-alt"></i>
+    </a>
+    
+      <a href="javascript:void(0);" id="site-reward">
+        <i class="fa fa-thumbs-up"></i>
+      </a>
+    
+    <a href="javascript:void(0);" id="back-top-btn">
+      <i class="fa fa-chevron-up"></i>
+    </a>
+  </div>
+</div>
+    <div id="share-btn">
+  
+    <a id="share-btn-twitter" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-twitter"></i>
+    </a>
+  
+  
+    <a id="share-btn-facebook" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-facebook"></i>
+    </a>
+  
+  
+    <a id="share-btn-weibo" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-weibo"></i>
+    </a>
+  
+  
+    <a id="share-btn-qq" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-qq"></i>
+    </a>
+  
+  
+    <a id="share-btn-wechat" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-wechat"></i>
+    </a>
+  
+</div>
+    
+
+
+
+
+
+    
+  </body>
+</html>
