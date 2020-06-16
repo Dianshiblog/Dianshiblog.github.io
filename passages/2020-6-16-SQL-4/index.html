@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Liu Dianshi" />
+  
+  
+  <title>「CURD 程序员系列」高性能 SQL 计划 Day 4 | Dianshi Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="SQL,Java,MySQL," />
+  
+
+  
+  <meta name="description" content="刘点石的小站">
+
+  
+
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js" async></script>
+  
+
+  
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+  
+
+  
+
+  
+
+  <script>
+  // theme-ad's config script
+  // it can be used in every script
+  
+  window.AD_CONFIG = {
+    leancloud: {"appid":"Hyq9wkH495DgNHWhDQCOfQSp-gzGzoHsz","appkey":"WaR7nrzhliHj9aVwdQzkdlGd","comment":false,"count":true},
+    welcome: {"enable":false,"interval":30},
+    start_time: "2019-12-14",
+    passwords: ["09497f74cc589b68dd086fecc6ae388fe3eb25076d7bc235f48764ec1faaf4d1", ],
+    is_post: true,
+    lock: false,
+    author: "Liu Dianshi",
+    share: {"twitter":true,"facebook":true,"weibo":true,"qq":true,"wechat":true},
+    mathjax: true,
+    page_type: "",
+    root: "/"
+  };
+</script>
+
+  
+<script src="/vendor/sha256.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/index.js"></script>
+<script src="/vendor/qrcode.min.js"></script>
+
+
+  
+    <link rel="icon" href="/images/favicon.ico">
+    <link rel="apple-touch-icon" href="/images/touch-icon.png">
+  
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  
+<link rel="stylesheet" href="/css/index.css">
+<link rel="stylesheet" href="/styles/components/highlight/highlight.css">
+
+
+  
+<meta name="generator" content="Hexo 4.1.1"></head>
+  <body>
+    <header class="site-header">
+  <div class="site-header-brand">
+    
+      <span class="site-header-brand-title">
+        <a href="/">Dianshi</a>
+      </span>
+    
+    
+      <span class="site-header-brand-motto"> | 安静写些东西</span>
+    
+  </div>
+  <div class="site-header-right">
+    <nav class="site-header-navigation">
+      
+        <a href="/" target="_self">首页</a>
+      
+        <a href="/archives/" target="_self">归档</a>
+      
+        <a href="/tags/" target="_self">标签</a>
+      
+        <a href="/categories/" target="_self">分类</a>
+      
+        <a href="/about/" target="_self">关于</a>
+      
+    </nav>
+    <div class="site-header-btn">
+      
+        <a href="https://github.com/LiuDianshi" target="_blank" id="site-github">
+          <i class="fa fa-github-alt"></i>
+        </a>
+      
+      <a href="javascript:void(0);" id="site-search">
+        <i class="fa fa-search"></i>
+      </a>
+      <a href="javascript:void(0);" id="site-nav-btn">
+        <i class="fa fa-ellipsis-v"></i>
+      </a>
+    </div>
+  </div>
+</header>
+<nav class="table-content" id="site-nav">
+  <div class="table-content-title">
+    <span>导航</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc">
+      
+        <li class="toc-item">
+          <a href="/" target="_self">
+            首页
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/archives/" target="_self">
+            归档
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/tags/" target="_self">
+            标签
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/categories/" target="_self">
+            分类
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/about/" target="_self">
+            关于
+          </a>
+        </li>
+      
+    </ol>
+  </div>
+</nav>
+<div id="site-process"></div>
+    <main>
+      
+  <div class="passage">
+  <div class="passage-meta">
+    <span>
+      <i class="fa fa-calendar"></i>2020-06-16
+    </span>
+    
+      <span>
+        | <a href="/categories/SQL/"><i class="fa fa-bookmark"></i>SQL</a>
+      </span>
+    
+    
+      <span>
+        | <i class="fa fa-unlock-alt"></i>UNLOCK
+      </span>
+    
+  </div>
+  <h1 class="passage-title">
+    「CURD 程序员系列」高性能 SQL 计划 Day 4
+  </h1>
+  
+  <article class="passage-article">
+    <h1 id="高性能-SQL-计划-Day-4"><a href="#高性能-SQL-计划-Day-4" class="headerlink" title="高性能 SQL 计划 Day 4"></a>高性能 SQL 计划 Day 4</h1><p>今天计划继续，主要内容是《MySQL必知必会》19-22章的内容。</p>
+<h2 id="Ch-19-插入数据"><a href="#Ch-19-插入数据" class="headerlink" title="Ch 19.插入数据"></a>Ch 19.插入数据</h2><h3 id="1-插入一行"><a href="#1-插入一行" class="headerlink" title="1.插入一行"></a>1.插入一行</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#第一种方式</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> Customers</span><br><span class="line"><span class="keyword">VALUES</span>(<span class="literal">NULL</span>,</span><br><span class="line">   <span class="string">'Pep E. LaPew'</span>,</span><br><span class="line">   <span class="string">'100 Main Street'</span>,</span><br><span class="line">   <span class="string">'Los Angeles'</span>,</span><br><span class="line">   <span class="string">'CA'</span>,</span><br><span class="line">   <span class="string">'90046'</span>,</span><br><span class="line">   <span class="string">'USA'</span>,</span><br><span class="line">   <span class="literal">NULL</span>,</span><br><span class="line">   <span class="literal">NULL</span>);</span><br><span class="line"><span class="comment">#VALUES中值的顺序必须与表中列的顺序一致</span></span><br><span class="line">   </span><br><span class="line"><span class="comment">#第二种方式</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> customers(cust_name,</span><br><span class="line">   cust_address,</span><br><span class="line">   cust_city,</span><br><span class="line">   cust_state,</span><br><span class="line">   cust_zip,</span><br><span class="line">   cust_country,</span><br><span class="line">   cust_contact,</span><br><span class="line">   cust_email)</span><br><span class="line"><span class="keyword">VALUES</span>(<span class="string">'Pep E. LaPew'</span>,</span><br><span class="line">   <span class="string">'100 Main Street'</span>,</span><br><span class="line">   <span class="string">'Los Angeles'</span>,</span><br><span class="line">   <span class="string">'CA'</span>,</span><br><span class="line">   <span class="string">'90046'</span>,</span><br><span class="line">   <span class="string">'USA'</span>,</span><br><span class="line">   <span class="literal">NULL</span>,</span><br><span class="line">   <span class="literal">NULL</span>);</span><br><span class="line"><span class="comment">#VALUES中值的顺序与前面列的顺序一致即可，无需与表中列定义的顺序一致。</span></span><br></pre></td></tr></table></figure>
+
+<p>使用第二种方式时，如果表的定义允许，则可以在INSERT操作中省略某些列。省略的列必须满足以下条件之一：</p>
+<ul>
+<li>该列定义为允许NULL值（无值或空值）。</li>
+<li>在表定义中给出默认值。这表示如果不给出值，将使用默认值。</li>
+</ul>
+<p>如果对表中不允许NULL值且没有默认值的列不给出值，则MySQL将产生一条错误消息，并且相应的行插入不成功。</p>
+<p><strong>关于主键的处理：</strong>表中 cust_id 为自增主键，第一种方式中需要给这一列赋值为NULL，第二种可以直接省略该列。</p>
+<p><strong>注意：</strong>不管使用哪种INSERT语法，都必须给出VALUES的正确数目。如果不提供列名，则必须给每个表列提供一个值。如果提供列名，则必须对每个列出的列给出一个值。如果不这样，将产生一条错误消息，相应的行插入不成功。</p>
+<p><strong>提高整体性能：</strong> 数据库经常被多个客户访问，对处理什么请求以及用什么次序处理进行管理是MySQL的任务。INSERT操作可能很耗时（特别是有很多索引需要更新时），而且它可能降低等待处理的SELECT语句的性能。如果数据检索是最重要的（通常是这样），则你可以通过在INSERT和INTO之间添加关键字LOW_PRIORITY，指示MySQL降低INSERT语句的优先级，如下所示：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">LOW_PRIORITY</span> <span class="keyword">INTO</span></span><br></pre></td></tr></table></figure>
+
+<p>这个操作同样适用于UPDATE和DELETE语句。</p>
+<h3 id="2-插入多行"><a href="#2-插入多行" class="headerlink" title="2.插入多行"></a>2.插入多行</h3><p>如果想向表中插入多行数据，可以依次执行多个 INSERT 语句，同样也可以用以下方式插入：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> customers(cust_name,</span><br><span class="line">   cust_address,</span><br><span class="line">   cust_city,</span><br><span class="line">   cust_state,</span><br><span class="line">   cust_zip,</span><br><span class="line">   cust_country)</span><br><span class="line"><span class="keyword">VALUES</span>(</span><br><span class="line">        <span class="string">'Pep E. LaPew'</span>,</span><br><span class="line">        <span class="string">'100 Main Street'</span>,</span><br><span class="line">        <span class="string">'Los Angeles'</span>,</span><br><span class="line">        <span class="string">'CA'</span>,</span><br><span class="line">        <span class="string">'90046'</span>,</span><br><span class="line">        <span class="string">'USA'</span></span><br><span class="line">     ),</span><br><span class="line">      (</span><br><span class="line">        <span class="string">'M. Martian'</span>,</span><br><span class="line">        <span class="string">'42 Galaxy Way'</span>,</span><br><span class="line">        <span class="string">'New York'</span>,</span><br><span class="line">        <span class="string">'NY'</span>,</span><br><span class="line">        <span class="string">'11213'</span>,</span><br><span class="line">        <span class="string">'USA'</span></span><br><span class="line">   );</span><br></pre></td></tr></table></figure>
+
+<p>MySQL用单条INSERT语句处理多个插入比使用多条INSERT语句快，因此此方法可以提高性能。</p>
+<h3 id="3-插入检索出的数据"><a href="#3-插入检索出的数据" class="headerlink" title="3.插入检索出的数据"></a>3.插入检索出的数据</h3><p>可以将INSERT语句和SELECT语句结合使用，将检索出的数据插入新表中。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> customers(cust_id,</span><br><span class="line">    cust_contact,</span><br><span class="line">    cust_email,</span><br><span class="line">    cust_name,</span><br><span class="line">    cust_address,</span><br><span class="line">    cust_city,</span><br><span class="line">    cust_state,</span><br><span class="line">    cust_zip,</span><br><span class="line">    cust_country)</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">id</span>,</span><br><span class="line">    contact,</span><br><span class="line">    email,</span><br><span class="line">    <span class="keyword">name</span>,</span><br><span class="line">    address,</span><br><span class="line">    city,</span><br><span class="line">    state,</span><br><span class="line">    zip,</span><br><span class="line">    country</span><br><span class="line"><span class="keyword">FROM</span> custnew;</span><br><span class="line"><span class="comment">#注意：本例中要求 custnew 表中的 id 与 customers 表中的 cust_id 不重复，否则会造成主键重复的错误。如果 customers 中定义的是自增主键，则可以直接省略。</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong>插入检索出的数据要求对应列的数据类型一致。</p>
+<h2 id="Ch-20-更新和删除数据"><a href="#Ch-20-更新和删除数据" class="headerlink" title="Ch 20.更新和删除数据"></a>Ch 20.更新和删除数据</h2><h3 id="1-更新数据"><a href="#1-更新数据" class="headerlink" title="1.更新数据"></a>1.更新数据</h3><p>更新数据使用的是 UPDATE 语句，主要包含三部分内容：</p>
+<ul>
+<li>要更新的表</li>
+<li>要更新的列名及其更新后的值</li>
+<li>要更新行的过滤条件</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#更新某行的一列</span></span><br><span class="line"><span class="keyword">UPDATE</span> customers</span><br><span class="line"><span class="keyword">SET</span> cust_email = <span class="string">'elmer@fudd.com'</span></span><br><span class="line"><span class="keyword">WHERE</span> cust_id = <span class="number">10005</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#更新某行的多列</span></span><br><span class="line"><span class="keyword">UPDATE</span> customers</span><br><span class="line"><span class="keyword">SET</span> cust_name = <span class="string">'The Fudds'</span>,</span><br><span class="line">    cust_email = <span class="string">'elmer@fudd.com'</span></span><br><span class="line"><span class="keyword">WHERE</span> cust_id = <span class="number">10005</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong>使用UPDATE语句时一定要注意使用WHERE进行过滤，否则会更新全部行的内容。</p>
+<p><strong>IGNORE关键字：</strong>如果用UPDATE语句更新多行，并且在更新这些行中的一行或多行时出一个现错误，则整个UPDATE操作被取消（错误发生前更新的所有行被恢复到它们原来的值）。为即使是发生错误，也继续进行更新，可使用IGNORE关键字，如下所示：</p>
+  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> <span class="keyword">IGNORE</span> customers ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>删除某列的值：</strong>为了删除某列的值，如果该列允许值为NULL，可以直接将其设为NULL。</p>
+<h3 id="2-删除数据"><a href="#2-删除数据" class="headerlink" title="2.删除数据"></a>2.删除数据</h3><p>删除数据使用的是DELETE关键字，主要包含两部分：</p>
+<ul>
+<li>使用的表</li>
+<li>删除的过滤条件</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> customers</span><br><span class="line"><span class="keyword">WHERE</span> cust_id = <span class="number">10006</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong>使用DELETE语句时一定要注意使用WHERE进行过滤，否则会删除全部的行。</p>
+<p><strong>更快的删除：</strong>如果想从表中删除所有行，不要使用DELETE。可使用TRUNCATE TABLE语句，它完成相同的工作，但速度更快（TRUNCATE实际是删除原来的表并重新创建一个表，而不是逐行删除表中的数据）。</p>
+<h3 id="3-更新和删除的原则"><a href="#3-更新和删除的原则" class="headerlink" title="3.更新和删除的原则"></a>3.更新和删除的原则</h3><ul>
+<li>除非确实打算更新和删除每一行，否则绝对不要使用不带WHERE子句的UPDATE或DELETE语句。</li>
+<li>保证每个表都有主键，尽可能像WHERE子句那样使用它（可以指定各主键、多个值或值的范围）。</li>
+<li>在对UPDATE或DELETE语句使用WHERE子句前，应该先用SELECT进行测试，保证它过滤的是正确的记录，以防编写的WHERE子句不正确。</li>
+<li>使用强制实施引用完整性的数据库，这样MySQL将不允许删除具有与其他表相关联的数据的行。</li>
+</ul>
+<h2 id="Ch-21-创建和操纵表"><a href="#Ch-21-创建和操纵表" class="headerlink" title="Ch 21.创建和操纵表"></a>Ch 21.创建和操纵表</h2><h3 id="1-创建表"><a href="#1-创建表" class="headerlink" title="1.创建表"></a>1.创建表</h3><p>使用CREATE TABLE语句创建表，主要包含以下两部分：</p>
+<ul>
+<li>新表的名字，在关键字CREATE TABLE之后给出；</li>
+<li>表列的名字和定义，用逗号分隔。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> customers</span><br><span class="line">(</span><br><span class="line">  cust_id      <span class="built_in">int</span>       <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  cust_name    <span class="built_in">char</span>(<span class="number">50</span>)  <span class="keyword">NOT</span> <span class="literal">NULL</span> ,</span><br><span class="line">  cust_address <span class="built_in">char</span>(<span class="number">50</span>)  <span class="literal">NULL</span> ,</span><br><span class="line">  cust_city    <span class="built_in">char</span>(<span class="number">50</span>)  <span class="literal">NULL</span> ,</span><br><span class="line">  cust_state   <span class="built_in">char</span>(<span class="number">5</span>)   <span class="literal">NULL</span> ,</span><br><span class="line">  cust_zip     <span class="built_in">char</span>(<span class="number">10</span>)  <span class="literal">NULL</span> ,</span><br><span class="line">  cust_country <span class="built_in">char</span>(<span class="number">50</span>)  <span class="literal">NULL</span> ,</span><br><span class="line">  cust_contact <span class="built_in">char</span>(<span class="number">50</span>)  <span class="literal">NULL</span> ,</span><br><span class="line">  cust_email   <span class="built_in">char</span>(<span class="number">255</span>) <span class="literal">NULL</span> ,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (cust_id)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如果你仅想在一个表不存在时创建它，应该在表名后给出IF NOT EXISTS。这样做不检查已有表的模式是否与你打算创建的表模式相匹配。它只是查看表名是否存在，并且仅在表名不存在时创建它。</p>
+<ol>
+<li><p>注意以下几点：</p>
+<ul>
+<li>主键值必须唯一</li>
+<li>每个表只允许一个AUTO_INCREMENT列，而且它必须被索引（如成为主键）</li>
+<li>如果对AUTO_INCREMENT列强行指定一个未使用过的值，则会覆盖自增的值，并且接下来插入的记录该列将会从指定值开始自增</li>
+</ul>
+</li>
+<li><p>获得最后一个AUTO_INCREMENT值：</p>
+</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">last_insert_id</span>();</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>指定默认值：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> orderitems</span><br><span class="line">(</span><br><span class="line">  order_num  <span class="built_in">int</span>          <span class="keyword">NOT</span> <span class="literal">NULL</span> ,</span><br><span class="line">  order_item <span class="built_in">int</span>          <span class="keyword">NOT</span> <span class="literal">NULL</span> ,</span><br><span class="line">  prod_id    <span class="built_in">char</span>(<span class="number">10</span>)     <span class="keyword">NOT</span> <span class="literal">NULL</span> ,</span><br><span class="line">  quantity   <span class="built_in">int</span>          <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">1</span>,</span><br><span class="line">  item_price <span class="built_in">decimal</span>(<span class="number">8</span>,<span class="number">2</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> ,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (order_num, order_item)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span>;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li><p>数据库引擎</p>
+<p>MySQL数据库主要有以下几种引擎：</p>
+<ul>
+<li>InnoDB是一个可靠的事务处理引擎，它不支持全文本搜索；</li>
+<li>MEMORY在功能等同于MyISAM，但由于数据存储在内存（不是磁盘）中，速度很快（特别适合于临时表）；</li>
+<li>MyISAM是一个性能极高的引擎，它支持全文本搜索，但不支持事务处理。</li>
+</ul>
+<p><strong>注意：</strong></p>
+<ul>
+<li>同一数据库中不同的表可以使用不同的引擎；</li>
+<li>外健不能跨引擎，即使用一个引擎的表不能引用具有使用不同引擎的表的外键。</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-更新表"><a href="#2-更新表" class="headerlink" title="2.更新表"></a>2.更新表</h3><p>可使用ALTER TABLE语句更新表。但是，理想状态下，当表中存储数据以后，该表就不应该再被更新。在表的设计过程中需要花费大量时间来考虑，以便后期不对该表进行大的改动。</p>
+<p>ALTER TABLE语句主要包含以下几个部分：</p>
+<ul>
+<li>在ALTER TABLE之后给出要更改的表名（该表必须存在，否则将出错）；</li>
+<li>所做更改的列表。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#添加列</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> vendors</span><br><span class="line"><span class="keyword">ADD</span> vend_phone <span class="built_in">CHAR</span>(<span class="number">20</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">#删除列</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> vendors</span><br><span class="line"><span class="keyword">DROP</span> <span class="keyword">COLUMN</span> vend_phone;</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改列属性</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> vendors <span class="keyword">MODIFY</span> <span class="keyword">COLUMN</span> vend_phone <span class="built_in">VARCHAR</span>(<span class="number">50</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改列</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> vendors <span class="keyword">CHANGE</span> vend_phone phone <span class="built_in">VARCHAR</span>(<span class="number">30</span>);  </span><br><span class="line"></span><br><span class="line"><span class="comment">#定义外键</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> orderitems</span><br><span class="line"><span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> fk_orderitems_products <span class="keyword">FOREIGN</span> <span class="keyword">KEY</span> (prod_id)</span><br><span class="line"><span class="keyword">REFERENCES</span> products (prod_id);</span><br></pre></td></tr></table></figure>
+
+<p>如果要更改结构复杂的表，一般涉及到以下过程：</p>
+<ul>
+<li>用新的列布局创建新表；</li>
+<li>使用INSERT SELECT语句从旧表复制数据到新表。如果有必要，可使用转换函数和计算字段；</li>
+<li>检验包含所需数据的新表；</li>
+<li>重命名旧表（如果确定，可以删除它）；</li>
+<li>用旧表原来的名字重命名新表；</li>
+<li>根据需要，重新创建触发器、存储过程、索引和外键。</li>
+</ul>
+<h3 id="3-删除和重命名表"><a href="#3-删除和重命名表" class="headerlink" title="3.删除和重命名表"></a>3.删除和重命名表</h3><p>删除表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> <span class="keyword">TABLE</span> customers2;</span><br></pre></td></tr></table></figure>
+
+<p>重命名表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RENAME</span> <span class="keyword">TABLE</span> customers2 <span class="keyword">TO</span> customers;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Ch-22-使用视图"><a href="#Ch-22-使用视图" class="headerlink" title="Ch 22.使用视图"></a>Ch 22.使用视图</h2><p>视图是一个虚拟的表，它不包含表中应该有的任何列或数据，它包含的是一个SQL查询结果。</p>
+<p>使用视图可以带来以下优点：</p>
+<ul>
+<li>重用SQL语句。</li>
+<li>简化复杂的SQL操作。在编写查询后，可以方便地重用它而不必知道它的基本查询细节。</li>
+<li>使用表的组成部分而不是整个表。</li>
+<li>保护数据。可以给用户授予表的特定部分的访问权限而不是整个表的访问权限。</li>
+<li>更改数据格式和表示。视图可返回与底层表的表示和格式不同的数据。</li>
+</ul>
+<h3 id="1-使用视图"><a href="#1-使用视图" class="headerlink" title="1.使用视图"></a>1.使用视图</h3><p>视图的基本使用：</p>
+<ul>
+<li>视图用CREATE VIEW语句来创建。</li>
+<li>使用SHOW CREATE VIEW viewname;来查看创建视图的语句。</li>
+<li>用DROP删除视图，其语法为DROP VIEW viewname。</li>
+<li>更新视图时，可以先用DROP再用CREATE，也可以直接用CREATE OR REPLACE VIEW，如果要更新的视图不存在，则会创建一个视图；如果要更新的视图存在，则会替换原有视图。</li>
+</ul>
+<ol>
+<li><p>使用视图简化复杂的联结</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#通过联结查询结果创建视图</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> productcustomers <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> cust_name, cust_contact, prod_id</span><br><span class="line"><span class="keyword">FROM</span> customers, orders, orderitems</span><br><span class="line"><span class="keyword">WHERE</span> customers.cust_id = orders.cust_id</span><br><span class="line">  <span class="keyword">AND</span> orderitems.order_num = orders.order_num;</span><br><span class="line">  </span><br><span class="line"><span class="comment">#使用视图查询</span></span><br><span class="line"><span class="keyword">SELECT</span> cust_name, cust_contact</span><br><span class="line"><span class="keyword">FROM</span> productcustomers</span><br><span class="line"><span class="keyword">WHERE</span> prod_id = <span class="string">'TNT2'</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用视图重新格式化检索出的数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#创建视图</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> vendorlocations <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">Concat</span>(<span class="keyword">RTrim</span>(vend_name), <span class="string">' ('</span>, <span class="keyword">RTrim</span>(vend_country), <span class="string">')'</span>)</span><br><span class="line">       <span class="keyword">AS</span> vend_title</span><br><span class="line"><span class="keyword">FROM</span> vendors</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> vend_name;</span><br><span class="line"></span><br><span class="line"><span class="comment">#使用视图</span></span><br><span class="line"><span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">FROM</span> vendorlocations;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用视图过滤数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#创建视图</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> customeremaillist <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> cust_id, cust_name, cust_email</span><br><span class="line"><span class="keyword">FROM</span> customers</span><br><span class="line"><span class="keyword">WHERE</span> cust_email <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#使用视图</span></span><br><span class="line"><span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">FROM</span> customeremaillist;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用视图与计算字段</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#创建视图</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> orderitemsexpanded <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> prod_id,</span><br><span class="line">       quantity,</span><br><span class="line">       item_price,</span><br><span class="line">       quantity*item_price <span class="keyword">AS</span> expanded_price</span><br><span class="line"><span class="keyword">FROM</span> orderitems;</span><br><span class="line"></span><br><span class="line"><span class="comment">#使用视图</span></span><br><span class="line"><span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">FROM</span> orderitemsexpanded</span><br><span class="line"><span class="keyword">WHERE</span> order_num = <span class="number">20005</span>;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h3 id="2-更新视图"><a href="#2-更新视图" class="headerlink" title="2.更新视图"></a>2.更新视图</h3><p>通常而言，视图是可以进行更新操作的（使用INSERT、UPDATE和DELETE），更新视图将更新基表。因此，如果MySQL不能正确地确定被更新的基数据，则不允许更新（包括插入和删除）。</p>
+<p>如果视图的定义中存在以下要素，则不允许更新视图：</p>
+<ul>
+<li>分组（使用GROUP BY和HAVING）；</li>
+<li>联结；</li>
+<li>子查询；</li>
+<li>并；</li>
+<li>聚集函数（Min()、Count()、Sum()等）；</li>
+<li>DISTINCT；</li>
+<li>导出（计算）列。</li>
+</ul>
+<p>一般而言，应该将视图用于检索而非更新。</p>
+<p>未完待续···</p>
+
+  </article>
+  <aside class="table-content" id="site-toc">
+  <div class="table-content-title">
+    <i class="fa fa-arrow-right fa-lg" id="site-toc-hide-btn"></i>
+    <span>目录</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#高性能-SQL-计划-Day-4"><span class="toc-text">高性能 SQL 计划 Day 4</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-19-插入数据"><span class="toc-text">Ch 19.插入数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-插入一行"><span class="toc-text">1.插入一行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-插入多行"><span class="toc-text">2.插入多行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-插入检索出的数据"><span class="toc-text">3.插入检索出的数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-20-更新和删除数据"><span class="toc-text">Ch 20.更新和删除数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-更新数据"><span class="toc-text">1.更新数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-删除数据"><span class="toc-text">2.删除数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-更新和删除的原则"><span class="toc-text">3.更新和删除的原则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-21-创建和操纵表"><span class="toc-text">Ch 21.创建和操纵表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-创建表"><span class="toc-text">1.创建表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-更新表"><span class="toc-text">2.更新表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-删除和重命名表"><span class="toc-text">3.删除和重命名表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ch-22-使用视图"><span class="toc-text">Ch 22.使用视图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-使用视图"><span class="toc-text">1.使用视图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-更新视图"><span class="toc-text">2.更新视图</span></a></li></ol></li></ol></li></ol>
+  </div>
+</aside>
+  
+    <aside class="passage-copyright">
+      <div>本文作者: 刘点石</div>
+      
+        <div>
+          原文链接: 
+          <a href="" target="_blank">https://dianshiblog.github.io/passages/2020-6-16-SQL-4/</a>
+        </div>
+      
+      <div>
+        版权声明: 本博客所有文章除特别声明外, 均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 许可协议. 转载请注明出处!
+      </div>
+    </aside>
+  
+  
+    <div class="passage-tags">
+     
+      <a href="/tags/Java/"><i class="fa fa-tags"></i>Java</a>
+     
+      <a href="/tags/MySQL/"><i class="fa fa-tags"></i>MySQL</a>
+    
+    </div>
+  
+</div>
+
+    </main>
+    
+    <div class="site-footer-wrapper">
+  <footer class="site-footer">
+    
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">博客推荐</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://godbmw.com/" target="_blank">GodBMW</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="http://ruanyifeng.com/" target="_blank">阮一峰的个人网站</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">系列教程</h5>
+          
+            <span class="site-footer-item">
+              <a href="" target="_self">暂无</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">抓到我</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://weibo.com/u/3027481715" target="_blank">微博</a>
+            </span>
+          
+        </div>
+      
+    
+    <div class="site-footer-info">
+      <i class="fa fa-clock-o"></i> 本站已稳定运行<span id="site-time"></span>
+    </div>
+    
+      <div class="site-footer-info">
+        <i class="fa fa-paw"></i> 您是本站第 <span id="site-count"></span> 位访客
+      </div>
+    
+    
+      <div class="site-footer-info">
+        <i class="fa fa-at"></i> Email: dianshiliu@163.com
+      </div>
+    
+    <div class="site-footer-info">
+      <i class="fa fa-copyright"></i> 
+      2019 <a href="https://github.com/dongyuanxin/theme-ad/" target="_blank">Theme-AD</a>.
+      Created by <a href="https://godbmw.com/" target="_blank">GodBMW</a>.
+      All rights reserved.
+    </div>
+  </footer>
+</div>
+    <div id="site-layer" style="display:none;">
+  <div class="site-layer-content">
+    <div class="site-layer-header">
+      <span class="site-layer-header-title" id="site-layer-title"></span>
+      <i class="fa fa-close" id="site-layer-close"></i>
+    </div>
+    <div class="site-layer-body" id="site-layer-container">
+      <div class="site-layer-input" id="site-layer-search" style="display: none;">
+        <div class="site-layer-input-choose">
+          <a href="javascript:void(0);" title="Change Search Engine">Google</a>
+        </div>
+        <input type="text">
+        <i class="fa fa-search"></i>
+      </div>
+      
+      <div id="site-layer-welcome" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+    
+
+<div class="bottom-bar">
+  <div class="bottom-bar-left">
+    <a href="javascript:void(0);" data-enable="false">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <a href="/passages/2020-6-15-SQL-3/" data-enable="true">
+      <i class="fa fa-arrow-right"></i>
+    </a>
+  </div>
+  <div class="bottom-bar-right">
+    <a href="javascript:void(0);" data-enable="true" id="site-toc-show-btn">
+      <i class="fa fa-bars"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="site-toggle-share-btn">
+      <i class="fa fa-share-alt"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="back-top-btn">
+      <i class="fa fa-chevron-up"></i>
+    </a>
+  </div>
+</div>
+    <div id="share-btn">
+  
+    <a id="share-btn-twitter" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-twitter"></i>
+    </a>
+  
+  
+    <a id="share-btn-facebook" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-facebook"></i>
+    </a>
+  
+  
+    <a id="share-btn-weibo" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-weibo"></i>
+    </a>
+  
+  
+    <a id="share-btn-qq" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-qq"></i>
+    </a>
+  
+  
+    <a id="share-btn-wechat" href="javascript:void(0);" target="_blank">
+      <i class="fa fa-wechat"></i>
+    </a>
+  
+</div>
+    
+
+
+
+
+
+    
+  </body>
+</html>
